@@ -13,7 +13,10 @@ function Login({ setUser, layoutConfig }) {
   const [erro, setErro] = useState("");
 
   const logoUrl = useMemo(() => {
-    if (!layoutConfig?.logo_url) return "/LogoTeleiosBank.png";
+    if (!layoutConfig?.logo_url) {
+      return `${process.env.PUBLIC_URL}/LogoTeleiosBank.png`;
+    }
+
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
   }, [layoutConfig]);
 

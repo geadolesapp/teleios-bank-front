@@ -79,6 +79,7 @@ body.theme-clouds-off .app-theme-bg {
   max-width: 400px;
   min-height: 100vh;
   background: transparent;
+  overflow: visible;
 }
 
 .login-page {
@@ -220,6 +221,10 @@ select.input {
 
 /* HEADER */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
   background: linear-gradient(
     135deg,
     var(--cor-primaria),
@@ -233,6 +238,10 @@ select.input {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .user-info {

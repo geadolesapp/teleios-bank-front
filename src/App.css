@@ -445,20 +445,54 @@ select.input {
 .input-wrapper {
   position: relative;
   width: 100%;
+  margin-bottom: 12px;
+}
+
+.input-wrapper .input {
+  margin-bottom: 0;
+  padding-right: 52px;
 }
 
 .toggle-password {
   position: absolute;
-  right: 12px;
   top: 50%;
+  right: 8px;
   transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 16px;
-  color: #aaa;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.input-wrapper .input {
-  padding-right: 40px;
+.toggle-password:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.toggle-password:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.toggle-password:focus-visible {
+  box-shadow: 0 0 0 2px rgba(110, 203, 255, 0.45);
+}
+
+.icone-olho {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 /* RANKING */
@@ -1198,15 +1232,4 @@ select.input {
   font-size: 14px;
   line-height: 1.45;
   color: #d7e4ee;
-}
-
-.toggle-password {
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

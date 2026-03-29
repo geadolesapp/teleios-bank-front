@@ -142,6 +142,7 @@ function SectionCard({
         <div className="section-card-actions">
           {rightContent}
           <button
+            type="button"
             className="action-btn secondary section-toggle-btn"
             onClick={onToggle}
           >
@@ -227,7 +228,8 @@ function AdminDashboard({ setUser }) {
 
   const [rankingNext, setRankingNext] = useState([]);
   const [rankingGE, setRankingGE] = useState([]);
-  const [carregandoRankingsAdmin, setCarregandoRankingsAdmin] = useState(true);
+  const [carregandoRankingsAdmin, setCarregandoRankingsAdmin] =
+    useState(true);
 
   const fontesPermitidas = [
     "Inter",
@@ -524,8 +526,11 @@ function AdminDashboard({ setUser }) {
       const nome = user.nome?.toLowerCase() || "";
       const email = user.email?.toLowerCase() || "";
       const celular = user.celular?.toLowerCase() || "";
+
       return (
-        nome.includes(termo) || email.includes(termo) || celular.includes(termo)
+        nome.includes(termo) ||
+        email.includes(termo) ||
+        celular.includes(termo)
       );
     });
   }, [users, buscaUsuario]);
@@ -899,7 +904,7 @@ function AdminDashboard({ setUser }) {
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                 />
-              
+
                 <button
                   type="button"
                   className="toggle-password"
@@ -1157,53 +1162,72 @@ function AdminDashboard({ setUser }) {
 
                           <div className="input-wrapper">
                             <input
-                            className="input"
-                            placeholder="Nova senha (opcional)"
-                            type={mostrarSenhaEdicao ? "text" : "password"}
-                            value={editSenha}
-                            onChange={(e) => setEditSenha(e.target.value)}
-                          />
-                        
-                          <button
-                            type="button"
-                            className="toggle-password"
-                            onClick={() => setMostrarSenhaEdicao((prev) => !prev)}
-                            aria-label={mostrarSenhaEdicao ? "Ocultar senha" : "Mostrar senha"}
-                          >
-                            <img
-                              src={mostrarSenhaEdicao ? olhoFechado : olhoAberto}
-                              alt={mostrarSenhaEdicao ? "Ocultar senha" : "Mostrar senha"}
-                              className="icone-olho"
+                              className="input"
+                              placeholder="Nova senha (opcional)"
+                              type={mostrarSenhaEdicao ? "text" : "password"}
+                              value={editSenha}
+                              onChange={(e) => setEditSenha(e.target.value)}
                             />
-                          </button>
-                        </div>
 
-                        <div
-                          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                        >
-                          <button
-                            className="action-btn"
-                            onClick={salvarEdicao}
-                            disabled={salvando}
-                          >
-                            {salvando ? "Salvando..." : "Salvar"}
-                          </button>
+                            <button
+                              type="button"
+                              className="toggle-password"
+                              onClick={() =>
+                                setMostrarSenhaEdicao((prev) => !prev)
+                              }
+                              aria-label={
+                                mostrarSenhaEdicao
+                                  ? "Ocultar senha"
+                                  : "Mostrar senha"
+                              }
+                            >
+                              <img
+                                src={
+                                  mostrarSenhaEdicao
+                                    ? olhoFechado
+                                    : olhoAberto
+                                }
+                                alt={
+                                  mostrarSenhaEdicao
+                                    ? "Ocultar senha"
+                                    : "Mostrar senha"
+                                }
+                                className="icone-olho"
+                              />
+                            </button>
+                          </div>
 
-                          <button
-                            className="action-btn secondary"
-                            onClick={cancelarEdicao}
-                            disabled={salvando}
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
                           >
-                            Cancelar
-                          </button>
+                            <button
+                              className="action-btn"
+                              onClick={salvarEdicao}
+                              disabled={salvando}
+                            >
+                              {salvando ? "Salvando..." : "Salvar"}
+                            </button>
 
-                          <button
-                            className="action-btn secondary"
-                            onClick={() => excluirUsuario(user._id)}
-                            disabled={salvando}
-                          >
-                            Excluir usuário
-                          </button>
+                            <button
+                              className="action-btn secondary"
+                              onClick={cancelarEdicao}
+                              disabled={salvando}
+                            >
+                              Cancelar
+                            </button>
+
+                            <button
+                              className="action-btn secondary"
+                              onClick={() => excluirUsuario(user._id)}
+                              disabled={salvando}
+                            >
+                              Excluir usuário
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1220,6 +1244,7 @@ function AdminDashboard({ setUser }) {
             onToggle={() => setMostrarMensagensAdmin(!mostrarMensagensAdmin)}
             rightContent={
               <button
+                type="button"
                 className="action-btn secondary section-inline-btn"
                 onClick={limparMensagensAdmin}
               >

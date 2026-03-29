@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import "../App.css";
 import api from "../services/api";
 
@@ -7,6 +7,10 @@ function PrimeiroAcesso({ user, setUser }) {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+
+  const logoUrl = useMemo(() => {
+    return `${process.env.PUBLIC_URL}/LogoTeleiosBank.png`;
+  }, []);
 
   async function handleAlterarSenha(e) {
     e.preventDefault();
@@ -52,7 +56,7 @@ function PrimeiroAcesso({ user, setUser }) {
   return (
     <div className="container">
       <div className="login-card">
-        <img src="/LogoTeleiosBank.png" alt="logo" className="logo" />
+        <img src={logoUrl} alt="logo" className="logo" />
 
         <h2 className="title">Primeiro acesso</h2>
         <p

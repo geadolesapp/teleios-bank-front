@@ -54,46 +54,51 @@ function PrimeiroAcesso({ user, setUser }) {
   }
 
   return (
-    <div className="container">
-      <div className="login-card">
-        <img src={logoUrl} alt="logo" className="logo" />
+    <div className="container app-theme-bg login-page">
+      <div className="page-shell login-shell">
+        <div className="login-content">
+          <div className="login-card glass-card">
+            <img src={logoUrl} alt="logo" className="logo" />
 
-        <h2 className="title">Primeiro acesso</h2>
-        <p
-          style={{
-            color: "#c7d5e0",
-            marginBottom: "16px",
-            textAlign: "center",
-          }}
-        >
-          Olá, {user?.nome}. Para continuar, defina sua nova senha.
-        </p>
+            <h2 className="title">Primeiro acesso</h2>
 
-        <form onSubmit={handleAlterarSenha}>
-          <input
-            className="input"
-            type="password"
-            placeholder="Nova senha"
-            value={novaSenha}
-            onChange={(e) => setNovaSenha(e.target.value)}
-          />
+            <p
+              style={{
+                color: "#c7d5e0",
+                marginBottom: "16px",
+                textAlign: "center",
+              }}
+            >
+              Olá, {user?.nome}. Para continuar, defina sua nova senha.
+            </p>
 
-          <input
-            className="input"
-            type="password"
-            placeholder="Confirmar nova senha"
-            value={confirmarSenha}
-            onChange={(e) => setConfirmarSenha(e.target.value)}
-          />
+            <form onSubmit={handleAlterarSenha}>
+              <input
+                className="input"
+                type="password"
+                placeholder="Nova senha"
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+              />
 
-          {erro && (
-            <p style={{ color: "#ff6b6b", marginBottom: "12px" }}>{erro}</p>
-          )}
+              <input
+                className="input"
+                type="password"
+                placeholder="Confirmar nova senha"
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+              />
 
-          <button className="button" type="submit" disabled={loading}>
-            {loading ? "Salvando..." : "Salvar nova senha"}
-          </button>
-        </form>
+              {erro && (
+                <p style={{ color: "#ff6b6b", marginBottom: "12px" }}>{erro}</p>
+              )}
+
+              <button className="button" type="submit" disabled={loading}>
+                {loading ? "Salvando..." : "Salvar nova senha"}
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

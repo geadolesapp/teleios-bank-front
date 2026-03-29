@@ -912,7 +912,7 @@ function AdminDashboard({ setUser }) {
             </div>
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
-              Use o modelo padrão com as colunas: nome, email, senha,
+              Use o modelo padrão com as colunas: nome, data de nascimento, email, senha,
               saldo_inicial.
             </p>
 

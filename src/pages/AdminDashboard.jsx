@@ -892,25 +892,27 @@ function AdminDashboard({ setUser }) {
               />
 
               <div className="input-wrapper">
-                <input
-                  className="input"
-                  placeholder="Senha"
-                  type={mostrarSenha ? "text" : "password"}
-                  value={novaSenha}
-                  onChange={(e) => setNovaSenha(e.target.value)}
-                />
+  <input
+    className="input"
+    placeholder="Senha"
+    type={mostrarSenha ? "text" : "password"}
+    value={novaSenha}
+    onChange={(e) => setNovaSenha(e.target.value)}
+  />
 
-                <span
-                  className="toggle-password"
-                  onClick={() => setMostrarSenha(!mostrarSenha)}
-                >
-                  <img
-                    src={mostrarSenha ? olhoFechado : olhoAberto}
-                    alt={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
-                    className="icone-olho"
-                  />
-                </span>
-              </div>
+  <button
+    type="button"
+    className="toggle-password"
+    onClick={() => setMostrarSenha((prev) => !prev)}
+    aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+  >
+    <img
+      src={mostrarSenha ? olhoFechado : olhoAberto}
+      alt={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+      className="icone-olho"
+    />
+  </button>
+</div>
 
               <button
                 className="action-btn"
@@ -1154,24 +1156,27 @@ function AdminDashboard({ setUser }) {
                           />
 
                           <div className="input-wrapper">
-                            <input
-                              className="input"
-                              placeholder="Nova senha (opcional)"
-                              type={mostrarSenhaEdicao ? "text" : "password"}
-                              value={editSenha}
-                              onChange={(e) => setEditSenha(e.target.value)}
-                            />
+  <input
+    className="input"
+    placeholder="Nova senha (opcional)"
+    type={mostrarSenhaEdicao ? "text" : "password"}
+    value={editSenha}
+    onChange={(e) => setEditSenha(e.target.value)}
+  />
 
-                            <span
-                              className="toggle-password"
-                              onClick={() =>
-                                setMostrarSenhaEdicao(!mostrarSenhaEdicao)
-                              }
-                            >
-                              {mostrarSenhaEdicao ? "🙈" : "👁️"}
-                            </span>
-                          </div>
-                        </div>
+  <button
+    type="button"
+    className="toggle-password"
+    onClick={() => setMostrarSenhaEdicao((prev) => !prev)}
+    aria-label={mostrarSenhaEdicao ? "Ocultar senha" : "Mostrar senha"}
+  >
+    <img
+      src={mostrarSenhaEdicao ? olhoFechado : olhoAberto}
+      alt={mostrarSenhaEdicao ? "Ocultar senha" : "Mostrar senha"}
+      className="icone-olho"
+    />
+  </button>
+</div>
 
                         <div
                           style={{ display: "flex", gap: 8, flexWrap: "wrap" }}

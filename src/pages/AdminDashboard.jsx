@@ -239,6 +239,25 @@ function AdminDashboard({ setUser }) {
     carregarMensagensAdmin();
   }, []);
 
+  function calcularIdade(dataNascimento) {
+    if (!dataNascimento) return "";
+
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+
+    if (
+      mes < 0 ||
+      (mes === 0 && hoje.getDate() < nascimento.getDate())
+    ) {
+      idade--;
+    }
+
+    return idade >= 0 ? String(idade) : "";
+  }
+
   async function carregarUsuarios() {
     try {
       setErro("");
@@ -775,7 +794,11 @@ function AdminDashboard({ setUser }) {
                 type="date"
                 placeholder="Data de nascimento"
                 value={novoDataNascimento}
-                onChange={(e) => setNovoDataNascimento(e.target.value)}
+                onChange={(e) => {
+                  const data = e.target.value;
+                  setNovoDataNascimento(data);
+                  setNovoIdade(calcularIdade(data));
+                }}
               />
 
               <select
@@ -794,7 +817,7 @@ function AdminDashboard({ setUser }) {
                 placeholder="Idade"
                 type="number"
                 value={novoIdade}
-                onChange={(e) => setNovoIdade(e.target.value)}
+                readOnly
               />
 
               <input
@@ -1041,9 +1064,11 @@ function AdminDashboard({ setUser }) {
                             className="input"
                             type="date"
                             value={editDataNascimento}
-                            onChange={(e) =>
-                              setEditDataNascimento(e.target.value)
-                            }
+                            onChange={(e) => {
+                              const data = e.target.value;
+                              setEditDataNascimento(data);
+                              setEditIdade(calcularIdade(data));
+                            }}
                           />
 
                           <select
@@ -1062,7 +1087,7 @@ function AdminDashboard({ setUser }) {
                             placeholder="Idade"
                             type="number"
                             value={editIdade}
-                            onChange={(e) => setEditIdade(e.target.value)}
+                            readOnly
                           />
 
                           <input

@@ -57,6 +57,7 @@ function Dashboard({ user, setUser }) {
   const [dadosUsuario, setDadosUsuario] = useState(user);
   const [extrato, setExtrato] = useState([]);
   const [ranking, setRanking] = useState([]);
+  const [grupoRanking, setGrupoRanking] = useState("");
   const [loading, setLoading] = useState(true);
   const [mostrarScanner, setMostrarScanner] = useState(false);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
@@ -95,7 +96,8 @@ function Dashboard({ user, setUser }) {
 
       setDadosUsuario(usuarioResponse.data);
       setExtrato(extratoResponse.data);
-      setRanking(rankingResponse.data.slice(0, 3));
+      setGrupoRanking(rankingResponse.data?.grupo || "");
+      setRanking(rankingResponse.data?.ranking || []);
       setMensagens(mensagensResponse.data);
       setMensagemPopup(popupResponse.data);
     } catch (error) {
@@ -480,7 +482,7 @@ function Dashboard({ user, setUser }) {
           </div>
 
           <div className="extrato">
-            <h3>Ranking</h3>
+            <h3>{grupoRanking ? `Ranking ${grupoRanking}` : "Ranking"}</h3>
 
             {ranking.length === 0 ? (
               <p style={{ color: "#ccc" }}>Nenhum usuário no ranking.</p>

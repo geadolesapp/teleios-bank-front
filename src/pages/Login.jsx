@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../App.css";
 import api from "../services/api";
 import Footer from "../components/Footer";
@@ -11,6 +11,7 @@ function Login({ setUser, layoutConfig }) {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [mostrarPopupInstalacao, setMostrarPopupInstalacao] = useState(false);
 
   const logoUrl = useMemo(() => {
     if (!layoutConfig?.logo_url) {
@@ -19,6 +20,19 @@ function Login({ setUser, layoutConfig }) {
 
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
   }, [layoutConfig]);
+
+  useEffect(() => {
+    const jaViuPopup = localStorage.getItem("teleios_popup_instalacao_visto");
+
+    if (!jaViuPopup) {
+      setMostrarPopupInstalacao(true);
+    }
+  }, []);
+
+  function fecharPopupInstalacao() {
+    localStorage.setItem("teleios_popup_instalacao_visto", "true");
+    setMostrarPopupInstalacao(false);
+  }
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -94,6 +108,39 @@ function Login({ setUser, layoutConfig }) {
 
         <Footer />
       </div>
+
+      {mostrarPopupInstalacao && (
+        <div className="scanner-overlay">
+          <div className="install-popup">
+            <h3>Instale o Teleios Bank</h3>
+
+            <p className="install-popup-text">
+              Para acessar mais rápido, você pode adicionar o app à tela inicial
+              do seu celular.
+            </p>
+
+            <div className="install-popup-box">
+              <strong>Android, Chrome</strong>
+              <p>
+                Toque no menu do navegador e escolha <b>Instalar app</b> ou{" "}
+                <b>Adicionar à tela inicial</b>.
+              </p>
+            </div>
+
+            <div className="install-popup-box">
+              <strong>iPhone, Safari</strong>
+              <p>
+                Toque em <b>Compartilhar</b> e depois em{" "}
+                <b>Adicionar à Tela de Início</b>.
+              </p>
+            </div>
+
+            <button className="action-btn" onClick={fecharPopupInstalacao}>
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,18 @@ import Footer from "../components/Footer";
 import olhoAberto from "../assets/olho-aberto.png";
 import olhoFechado from "../assets/olho-fechado.png";
 
+function detectarPlataforma() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  const isAndroid = /android/i.test(ua);
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || 
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isAndroid) return "android";
+  if (isIOS) return "ios";
+  return "desktop";
+}
+
 function Login({ setUser, layoutConfig }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -12,6 +24,7 @@ function Login({ setUser, layoutConfig }) {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
   const [mostrarPopupInstalacao, setMostrarPopupInstalacao] = useState(false);
+  const [plataforma, setPlataforma] = useState("desktop");
 
   const logoUrl = useMemo(() => {
     if (!layoutConfig?.logo_url) {
@@ -22,7 +35,19 @@ function Login({ setUser, layoutConfig }) {
   }, [layoutConfig]);
 
   useEffect(() => {
-    const jaViuPopup = localStorage.getItem("teleios_popup_instalacao_visto");
+    const plataformaDetectada = detectarPlataforma();
+    setPlataforma(plataformaDetectada);
+
+    if (plataformaDetectada === "desktop") {
+      return;
+    }
+
+    const chave =
+      plataformaDetectada === "android"
+        ? "teleios_popup_instalacao_android_visto"
+        : "teleios_popup_instalacao_ios_visto";
+
+    const jaViuPopup = localStorage.getItem(chave);
 
     if (!jaViuPopup) {
       setMostrarPopupInstalacao(true);
@@ -30,7 +55,12 @@ function Login({ setUser, layoutConfig }) {
   }, []);
 
   function fecharPopupInstalacao() {
-    localStorage.setItem("teleios_popup_instalacao_visto", "true");
+    const chave =
+      plataforma === "android"
+        ? "teleios_popup_instalacao_android_visto"
+        : "teleios_popup_instalacao_ios_visto";
+
+    localStorage.setItem(chave, "true");
     setMostrarPopupInstalacao(false);
   }
 
@@ -109,23 +139,39 @@ function Login({ setUser, layoutConfig }) {
         <Footer />
       </div>
 
-      {mostrarPopupInstalacao && (
+      {mostrarPopupInstalacao && plataforma === "android" && (
         <div className="scanner-overlay">
           <div className="install-popup">
             <h3>Instale o Teleios Bank</h3>
 
             <p className="install-popup-text">
-              Para acessar mais rápido, você pode adicionar o app à tela inicial
-              do seu celular.
+              Para acessar mais rápido, você pode instalar o app ou adicionar um
+              atalho à tela inicial.
             </p>
 
             <div className="install-popup-box">
               <strong>Android, Chrome</strong>
               <p>
-                Toque no menu (Os tres pontinhos) do navegador e escolha <b>Instalar app</b> ou{" "}
+                Toque no menu do navegador e escolha <b>Instalar app</b> ou{" "}
                 <b>Adicionar à tela inicial</b>.
               </p>
             </div>
+
+            <button className="action-btn" onClick={fecharPopupInstalacao}>
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mostrarPopupInstalacao && plataforma === "ios" && (
+        <div className="scanner-overlay">
+          <div className="install-popup">
+            <h3>Adicione o Teleios Bank à tela inicial</h3>
+
+            <p className="install-popup-text">
+              Para acessar mais rápido no iPhone, salve o app na tela inicial.
+            </p>
 
             <div className="install-popup-box">
               <strong>iPhone, Safari</strong>

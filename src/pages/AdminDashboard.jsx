@@ -275,7 +275,7 @@ function AdminDashboard({ setUser }) {
   }
 
   function baixarModeloUsuarios() {
-    const conteudo = "nome;email;senha;saldo_inicial\n";
+    const conteudo = "nome;data_nascimento;email;senha;saldo_inicial\n";
 
     const blob = new Blob([conteudo], {
       type: "text/csv;charset=utf-8;",

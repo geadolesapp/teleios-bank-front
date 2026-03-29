@@ -1210,82 +1210,6 @@ function AdminDashboard({ setUser }) {
           </SectionCard>
 
           <SectionCard
-            title="Ranking Next"
-            subtitle="Faixa etária de 11 a 13 anos"
-            open={mostrarRankingNext}
-            onToggle={() => setMostrarRankingNext(!mostrarRankingNext)}
-          >
-            {carregandoRankingsAdmin ? (
-              <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
-            ) : rankingNext.length === 0 ? (
-              <p style={{ color: "#ccc" }}>
-                Nenhum usuário encontrado no ranking Next.
-              </p>
-            ) : (
-              rankingNext.map((item, index) => {
-                const info = getRankingInfo(index);
-
-                return (
-                  <div className={info.classe} key={item._id}>
-                    <div className="ranking-esquerda">
-                      <span className="ranking-medalha">{info.medalha}</span>
-
-                      <div className="ranking-textos">
-                        <strong>
-                          {info.posicao} {item.nome}
-                        </strong>
-                        <div className="ranking-nivel">{item.idade} anos</div>
-                      </div>
-                    </div>
-
-                    <div className="ranking-saldo">
-                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </SectionCard>
-
-          <SectionCard
-            title="Ranking GE"
-            subtitle="Faixa etária de 14 a 17 anos"
-            open={mostrarRankingGE}
-            onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
-          >
-            {carregandoRankingsAdmin ? (
-              <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
-            ) : rankingGE.length === 0 ? (
-              <p style={{ color: "#ccc" }}>
-                Nenhum usuário encontrado no ranking GE.
-              </p>
-            ) : (
-              rankingGE.map((item, index) => {
-                const info = getRankingInfo(index);
-
-                return (
-                  <div className={info.classe} key={item._id}>
-                    <div className="ranking-esquerda">
-                      <span className="ranking-medalha">{info.medalha}</span>
-
-                      <div className="ranking-textos">
-                        <strong>
-                          {info.posicao} {item.nome}
-                        </strong>
-                        <div className="ranking-nivel">{item.idade} anos</div>
-                      </div>
-                    </div>
-
-                    <div className="ranking-saldo">
-                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </SectionCard>
-
-          <SectionCard
             title="Mensagens do admin"
             subtitle="Envio de avisos para os usuários"
             open={mostrarMensagensAdmin}
@@ -1692,6 +1616,82 @@ function AdminDashboard({ setUser }) {
                   </div>
                 </div>
               ))
+            )}
+          </SectionCard>
+
+          <SectionCard
+            title="Ranking Next"
+            subtitle="Faixa etária de 11 a 13 anos"
+            open={mostrarRankingNext}
+            onToggle={() => setMostrarRankingNext(!mostrarRankingNext)}
+          >
+            {carregandoRankingsAdmin ? (
+              <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
+            ) : rankingNext.length === 0 ? (
+              <p style={{ color: "#ccc" }}>
+                Nenhum usuário encontrado no ranking Next.
+              </p>
+            ) : (
+              rankingNext.map((item, index) => {
+                const info = getRankingInfo(index);
+
+                return (
+                  <div className={info.classe} key={item._id}>
+                    <div className="ranking-esquerda">
+                      <span className="ranking-medalha">{info.medalha}</span>
+
+                      <div className="ranking-textos">
+                        <strong>
+                          {info.posicao} {item.nome}
+                        </strong>
+                        <div className="ranking-nivel">{item.idade} anos</div>
+                      </div>
+                    </div>
+
+                    <div className="ranking-saldo">
+                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </SectionCard>
+
+          <SectionCard
+            title="Ranking GE"
+            subtitle="Faixa etária de 14 a 17 anos"
+            open={mostrarRankingGE}
+            onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
+          >
+            {carregandoRankingsAdmin ? (
+              <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
+            ) : rankingGE.length === 0 ? (
+              <p style={{ color: "#ccc" }}>
+                Nenhum usuário encontrado no ranking GE.
+              </p>
+            ) : (
+              rankingGE.map((item, index) => {
+                const info = getRankingInfo(index);
+
+                return (
+                  <div className={info.classe} key={item._id}>
+                    <div className="ranking-esquerda">
+                      <span className="ranking-medalha">{info.medalha}</span>
+
+                      <div className="ranking-textos">
+                        <strong>
+                          {info.posicao} {item.nome}
+                        </strong>
+                        <div className="ranking-nivel">{item.idade} anos</div>
+                      </div>
+                    </div>
+
+                    <div className="ranking-saldo">
+                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                    </div>
+                  </div>
+                );
+              })
             )}
           </SectionCard>
         </div>

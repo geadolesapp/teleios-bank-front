@@ -122,7 +122,7 @@ function Login({ setUser, layoutConfig }) {
             <div className="install-popup-box">
               <strong>Android, Chrome</strong>
               <p>
-                Toque no menu do navegador e escolha <b>Instalar app</b> ou{" "}
+                Toque no menu (Os tres pontinhos) do navegador e escolha <b>Instalar app</b> ou{" "}
                 <b>Adicionar à tela inicial</b>.
               </p>
             </div>

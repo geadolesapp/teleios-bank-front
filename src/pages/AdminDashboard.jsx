@@ -222,8 +222,7 @@ function AdminDashboard({ setUser }) {
   const [mensagensAdmin, setMensagensAdmin] = useState([]);
   const [tituloMensagem, setTituloMensagem] = useState("");
   const [conteudoMensagem, setConteudoMensagem] = useState("");
-  const [enviarParaTodos, setEnviarParaTodos] = useState(true);
-  const [destinatarioMensagem, setDestinatarioMensagem] = useState("");
+  const [grupoDestinoMensagem, setGrupoDestinoMensagem] = useState("todos");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
 
   const [rankingNext, setRankingNext] = useState([]);
@@ -284,6 +283,13 @@ function AdminDashboard({ setUser }) {
       classe: "ranking-card ranking-terceiro",
       posicao: "3º",
     };
+  }
+
+  function formatarGrupoMensagem(grupo) {
+    if (grupo === "todos") return "Enviada para todos";
+    if (grupo === "next") return "Enviada para o grupo Next";
+    if (grupo === "ge") return "Enviada para o grupo GE";
+    return "Grupo não identificado";
   }
 
   async function carregarUsuarios() {
@@ -450,25 +456,18 @@ function AdminDashboard({ setUser }) {
       return;
     }
 
-    if (!enviarParaTodos && !destinatarioMensagem) {
-      alert("Selecione um usuário destinatário");
-      return;
-    }
-
     try {
       setEnviandoMensagem(true);
 
       await api.post("/admin/messages", {
         titulo: tituloMensagem.trim(),
         conteudo: conteudoMensagem.trim(),
-        enviar_para_todos: enviarParaTodos,
-        destinatario_id: enviarParaTodos ? null : destinatarioMensagem,
+        grupo_destino: grupoDestinoMensagem,
       });
 
       setTituloMensagem("");
       setConteudoMensagem("");
-      setEnviarParaTodos(true);
-      setDestinatarioMensagem("");
+      setGrupoDestinoMensagem("todos");
 
       await carregarMensagensAdmin();
       alert("Mensagem enviada com sucesso");
@@ -1211,7 +1210,7 @@ function AdminDashboard({ setUser }) {
 
           <SectionCard
             title="Mensagens do admin"
-            subtitle="Envio de avisos para os usuários"
+            subtitle="Envio de avisos para grupos"
             open={mostrarMensagensAdmin}
             onToggle={() => setMostrarMensagensAdmin(!mostrarMensagensAdmin)}
             rightContent={
@@ -1240,33 +1239,15 @@ function AdminDashboard({ setUser }) {
                 style={{ resize: "vertical" }}
               />
 
-              <div className="layout-toggle">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={enviarParaTodos}
-                    onChange={(e) => setEnviarParaTodos(e.target.checked)}
-                  />
-                  Enviar para todos os usuários
-                </label>
-              </div>
-
-              {!enviarParaTodos && (
-                <select
-                  className="input"
-                  value={destinatarioMensagem}
-                  onChange={(e) => setDestinatarioMensagem(e.target.value)}
-                >
-                  <option value="">Selecione um usuário</option>
-                  {users
-                    .filter((u) => u.role === "user")
-                    .map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.nome} - {u.email}
-                      </option>
-                    ))}
-                </select>
-              )}
+              <select
+                className="input"
+                value={grupoDestinoMensagem}
+                onChange={(e) => setGrupoDestinoMensagem(e.target.value)}
+              >
+                <option value="todos">Enviar para todos</option>
+                <option value="next">Enviar para o grupo Next</option>
+                <option value="ge">Enviar para o grupo GE</option>
+              </select>
 
               <button
                 className="action-btn"
@@ -1309,13 +1290,7 @@ function AdminDashboard({ setUser }) {
                           {msg.conteudo}
                         </div>
                         <div className="extrato-data" style={{ marginTop: 8 }}>
-                          {msg.enviar_para_todos
-                            ? "Enviada para todos"
-                            : `Destinatários: ${
-                                msg.destinatarios
-                                  ?.map((d) => d.nome)
-                                  .join(", ") || "-"
-                              }`}
+                          {formatarGrupoMensagem(msg.grupo_destino)}
                         </div>
                       </div>
 

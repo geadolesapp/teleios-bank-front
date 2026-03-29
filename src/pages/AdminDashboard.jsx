@@ -205,6 +205,8 @@ function AdminDashboard({ setUser }) {
   const [mostrarGerarQR, setMostrarGerarQR] = useState(false);
   const [mostrarQRCodesGerados, setMostrarQRCodesGerados] = useState(false);
   const [mostrarMensagensAdmin, setMostrarMensagensAdmin] = useState(false);
+  const [mostrarRankingNext, setMostrarRankingNext] = useState(false);
+  const [mostrarRankingGE, setMostrarRankingGE] = useState(false);
 
   const [buscaUsuario, setBuscaUsuario] = useState("");
 
@@ -224,6 +226,10 @@ function AdminDashboard({ setUser }) {
   const [destinatarioMensagem, setDestinatarioMensagem] = useState("");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
 
+  const [rankingNext, setRankingNext] = useState([]);
+  const [rankingGE, setRankingGE] = useState([]);
+  const [carregandoRankingsAdmin, setCarregandoRankingsAdmin] = useState(true);
+
   const fontesPermitidas = [
     "Inter",
     "Poppins",
@@ -237,6 +243,7 @@ function AdminDashboard({ setUser }) {
     carregarQRCodes();
     carregarLayout();
     carregarMensagensAdmin();
+    carregarRankingsAdmin();
   }, []);
 
   function calcularIdade(dataNascimento) {
@@ -248,14 +255,35 @@ function AdminDashboard({ setUser }) {
     let idade = hoje.getFullYear() - nascimento.getFullYear();
     const mes = hoje.getMonth() - nascimento.getMonth();
 
-    if (
-      mes < 0 ||
-      (mes === 0 && hoje.getDate() < nascimento.getDate())
-    ) {
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
       idade--;
     }
 
     return idade >= 0 ? String(idade) : "";
+  }
+
+  function getRankingInfo(index) {
+    if (index === 0) {
+      return {
+        medalha: "🥇",
+        classe: "ranking-card ranking-primeiro",
+        posicao: "1º",
+      };
+    }
+
+    if (index === 1) {
+      return {
+        medalha: "🥈",
+        classe: "ranking-card ranking-segundo",
+        posicao: "2º",
+      };
+    }
+
+    return {
+      medalha: "🥉",
+      classe: "ranking-card ranking-terceiro",
+      posicao: "3º",
+    };
   }
 
   async function carregarUsuarios() {
@@ -271,6 +299,23 @@ function AdminDashboard({ setUser }) {
       setErro(mensagem);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function carregarRankingsAdmin() {
+    try {
+      setCarregandoRankingsAdmin(true);
+
+      const response = await api.get("/user/admin-rankings");
+
+      setRankingNext(response.data?.next?.ranking || []);
+      setRankingGE(response.data?.ge?.ranking || []);
+    } catch (error) {
+      console.error("Erro ao carregar rankings do admin:", error);
+      setRankingNext([]);
+      setRankingGE([]);
+    } finally {
+      setCarregandoRankingsAdmin(false);
     }
   }
 
@@ -366,6 +411,7 @@ function AdminDashboard({ setUser }) {
       setResultadoImportacao(response.data);
       setArquivoImportacao(null);
       await carregarUsuarios();
+      await carregarRankingsAdmin();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem =
@@ -569,6 +615,7 @@ function AdminDashboard({ setUser }) {
 
       limparFormularioCriacao();
       await carregarUsuarios();
+      await carregarRankingsAdmin();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao criar usuário";
@@ -610,6 +657,7 @@ function AdminDashboard({ setUser }) {
 
       cancelarEdicao();
       await carregarUsuarios();
+      await carregarRankingsAdmin();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao editar usuário";
@@ -632,6 +680,7 @@ function AdminDashboard({ setUser }) {
       }
 
       await carregarUsuarios();
+      await carregarRankingsAdmin();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao excluir usuário";
@@ -668,6 +717,7 @@ function AdminDashboard({ setUser }) {
       });
 
       await carregarUsuarios();
+      await carregarRankingsAdmin();
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao alterar saldo";
       setErro(mensagem);
@@ -912,8 +962,8 @@ function AdminDashboard({ setUser }) {
             </div>
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
-              Use o modelo padrão com as colunas: nome, data de nascimento, email, senha,
-              saldo_inicial.
+              Use o modelo padrão com as colunas: nome, data_nascimento, email,
+              senha, saldo_inicial.
             </p>
 
             {resultadoImportacao && (
@@ -1157,6 +1207,82 @@ function AdminDashboard({ setUser }) {
                 ))
               )}
             </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Ranking Next"
+            subtitle="Faixa etária de 11 a 13 anos"
+            open={mostrarRankingNext}
+            onToggle={() => setMostrarRankingNext(!mostrarRankingNext)}
+          >
+            {carregandoRankingsAdmin ? (
+              <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
+            ) : rankingNext.length === 0 ? (
+              <p style={{ color: "#ccc" }}>
+                Nenhum usuário encontrado no ranking Next.
+              </p>
+            ) : (
+              rankingNext.map((item, index) => {
+                const info = getRankingInfo(index);
+
+                return (
+                  <div className={info.classe} key={item._id}>
+                    <div className="ranking-esquerda">
+                      <span className="ranking-medalha">{info.medalha}</span>
+
+                      <div className="ranking-textos">
+                        <strong>
+                          {info.posicao} {item.nome}
+                        </strong>
+                        <div className="ranking-nivel">{item.idade} anos</div>
+                      </div>
+                    </div>
+
+                    <div className="ranking-saldo">
+                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </SectionCard>
+
+          <SectionCard
+            title="Ranking GE"
+            subtitle="Faixa etária de 14 a 17 anos"
+            open={mostrarRankingGE}
+            onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
+          >
+            {carregandoRankingsAdmin ? (
+              <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
+            ) : rankingGE.length === 0 ? (
+              <p style={{ color: "#ccc" }}>
+                Nenhum usuário encontrado no ranking GE.
+              </p>
+            ) : (
+              rankingGE.map((item, index) => {
+                const info = getRankingInfo(index);
+
+                return (
+                  <div className={info.classe} key={item._id}>
+                    <div className="ranking-esquerda">
+                      <span className="ranking-medalha">{info.medalha}</span>
+
+                      <div className="ranking-textos">
+                        <strong>
+                          {info.posicao} {item.nome}
+                        </strong>
+                        <div className="ranking-nivel">{item.idade} anos</div>
+                      </div>
+                    </div>
+
+                    <div className="ranking-saldo">
+                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </SectionCard>
 
           <SectionCard

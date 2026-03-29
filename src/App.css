@@ -1150,3 +1150,52 @@ select.input {
     max-width: 112px;
   }
 }
+
+.install-popup {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 20px;
+  padding: 22px;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+  background: rgba(8, 18, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.install-popup h3 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  color: #fff;
+}
+
+.install-popup-text {
+  color: #dfe8ef;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.install-popup-box {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.install-popup-box strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.install-popup-box p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #d7e4ee;
+}

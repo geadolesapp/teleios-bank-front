@@ -814,10 +814,10 @@ function AdminDashboard({ setUser }) {
 
               <input
                 className="input"
-                placeholder="Idade"
+                placeholder="Idade calculada automaticamente"
                 type="number"
                 value={novoIdade}
-                readOnly
+                disabled
               />
 
               <input
@@ -1084,10 +1084,10 @@ function AdminDashboard({ setUser }) {
 
                           <input
                             className="input"
-                            placeholder="Idade"
+                            placeholder="Idade calculada automaticamente"
                             type="number"
                             value={editIdade}
-                            readOnly
+                            disabled
                           />
 
                           <input

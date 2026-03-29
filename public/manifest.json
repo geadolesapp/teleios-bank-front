@@ -3,12 +3,12 @@
   "name": "Teleios Bank",
   "icons": [
     {
-      "src": "iconeTeleios.png",
+      "src": "iconeTeleios192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "iconeTeleios.png",
+      "src": "iconeTeleios512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

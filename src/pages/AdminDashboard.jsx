@@ -843,17 +843,19 @@ function AdminDashboard({ setUser }) {
                 onChange={(e) => setNovoNome(e.target.value)}
               />
 
-              <input
-                className="input"
-                type="date"
-                placeholder="Data de nascimento"
-                value={novoDataNascimento}
-                onChange={(e) => {
-                  const data = e.target.value;
-                  setNovoDataNascimento(data);
-                  setNovoIdade(calcularIdade(data));
-                }}
-              />
+             <div style={{ width: "100%" }}>
+                <label className="color-label">Inserir data de nascimento</label>
+                <input
+                  className="input"
+                  type="date"
+                  value={novoDataNascimento}
+                  onChange={(e) => {
+                    const data = e.target.value;
+                    setNovoDataNascimento(data);
+                    setNovoIdade(calcularIdade(data));
+                  }}
+                />
+              </div>
 
               <select
                 className="input"
@@ -1116,16 +1118,19 @@ function AdminDashboard({ setUser }) {
                             onChange={(e) => setEditNome(e.target.value)}
                           />
 
-                          <input
-                            className="input"
-                            type="date"
-                            value={editDataNascimento}
-                            onChange={(e) => {
-                              const data = e.target.value;
-                              setEditDataNascimento(data);
-                              setEditIdade(calcularIdade(data));
-                            }}
-                          />
+                          <div style={{ width: "100%" }}>
+                            <label className="color-label">Inserir data de nascimento</label>
+                            <input
+                              className="input"
+                              type="date"
+                              value={editDataNascimento}
+                              onChange={(e) => {
+                                const data = e.target.value;
+                                setEditDataNascimento(data);
+                                setEditIdade(calcularIdade(data));
+                              }}
+                            />
+                          </div>
 
                           <select
                             className="input"
@@ -1457,20 +1462,25 @@ function AdminDashboard({ setUser }) {
                 onChange={(e) => setQrInicio(e.target.value)}
               />
 
-              <input
-                className="input"
-                type="datetime-local"
-                value={qrFim}
-                onChange={(e) => setQrFim(e.target.value)}
-              />
-
-              <input
-                className="input"
-                placeholder="Raio em metros (opcional)"
-                type="number"
-                value={qrRaio}
-                onChange={(e) => setQrRaio(e.target.value)}
-              />
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Inserir data e hora de início</label>
+                <input
+                  className="input"
+                  type="datetime-local"
+                  value={qrInicio}
+                  onChange={(e) => setQrInicio(e.target.value)}
+                />
+              </div>
+              
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Inserir data e hora de fim</label>
+                <input
+                  className="input"
+                  type="datetime-local"
+                  value={qrFim}
+                  onChange={(e) => setQrFim(e.target.value)}
+                />
+              </div>
 
               <button
                 type="button"

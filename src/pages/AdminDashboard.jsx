@@ -1103,7 +1103,7 @@ function AdminDashboard({ setUser }) {
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
               Use o modelo padrão com as colunas: nome, data_nascimento, email, 
-              telefone, sexo, senha, saldo_inicial.
+              celular, sexo, senha, saldo_inicial.
             </p>
 
             {resultadoImportacao && (

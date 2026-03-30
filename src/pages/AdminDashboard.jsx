@@ -1111,13 +1111,12 @@ function AdminDashboard({ setUser }) {
                 <p style={{ color: "#fff" }}>
                   <strong>Resultado da importação</strong>
                 </p>
-
+            
                 <p style={{ color: "#9fb3c8" }}>
-                  Total de linhas: {resultadoImportacao.total_linhas} |
-                  Importados: {resultadoImportacao.importados} | Erros:{" "}
-                  {resultadoImportacao.erros}
+                  Total de linhas: {resultadoImportacao.total_linhas} | Importados:{" "}
+                  {resultadoImportacao.importados} | Erros: {resultadoImportacao.erros}
                 </p>
-
+            
                 <div
                   style={{
                     maxHeight: 220,
@@ -1129,19 +1128,22 @@ function AdminDashboard({ setUser }) {
                   {resultadoImportacao.resultados?.map((item, index) => (
                     <div className="extrato-item" key={index}>
                       <div>
-                        <strong>Linha {item.linha}</strong>
-                        <div className="extrato-data">{item.motivo}</div>
+                        <strong>{item.motivo}</strong>
                       </div>
-
-                      <div
-                        className={
-                          item.status === "sucesso"
-                            ? "valor-entrada"
-                            : "valor-saida"
-                        }
+            
+                      <button
+                        type="button"
+                        className="action-btn"
+                        style={{
+                          maxWidth: 90,
+                          minWidth: 90,
+                          padding: "10px 0",
+                          flex: "none",
+                        }}
+                        onClick={() => setResultadoImportacao(null)}
                       >
-                        {item.status === "sucesso" ? "OK" : "Erro"}
-                      </div>
+                        OK
+                      </button>
                     </div>
                   ))}
                 </div>

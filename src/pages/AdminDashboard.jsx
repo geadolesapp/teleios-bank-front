@@ -7,6 +7,7 @@ import {
   MapContainer,
   TileLayer,
   CircleMarker,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import olhoAberto from "../assets/olho-aberto.png";
@@ -22,10 +23,29 @@ function ClickMap({ onSelect }) {
   return null;
 }
 
+function MapUpdater({ center, zoom }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (center && Array.isArray(center)) {
+      map.setView(center, zoom || 16);
+    }
+  }, [center, zoom, map]);
+
+  return null;
+}
+
 function ModalMapa({ onClose, onConfirm }) {
   const [pontoSelecionado, setPontoSelecionado] = useState(null);
   const [enderecoPreview, setEnderecoPreview] = useState("");
   const [carregandoEndereco, setCarregandoEndereco] = useState(false);
+
+  const [enderecoBusca, setEnderecoBusca] = useState("");
+  const [resultadosBusca, setResultadosBusca] = useState([]);
+  const [buscandoLocais, setBuscandoLocais] = useState(false);
+
+  const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
+  const [mapZoom, setMapZoom] = useState(13);
 
   async function buscarEndereco(lat, lng) {
     try {
@@ -45,8 +65,54 @@ function ModalMapa({ onClose, onConfirm }) {
     }
   }
 
+  async function pesquisarEndereco() {
+    if (!enderecoBusca.trim()) {
+      alert("Digite um endereço para pesquisar");
+      return;
+    }
+
+    try {
+      setBuscandoLocais(true);
+      setResultadosBusca([]);
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(
+          enderecoBusca.trim(),
+        )}&limit=5`,
+      );
+
+      const data = await response.json();
+      setResultadosBusca(Array.isArray(data) ? data : []);
+
+      if (!data || data.length === 0) {
+        alert("Nenhum endereço encontrado");
+      }
+    } catch (error) {
+      console.error("Erro ao pesquisar endereço:", error);
+      alert("Erro ao pesquisar endereço");
+    } finally {
+      setBuscandoLocais(false);
+    }
+  }
+
+  function selecionarResultado(resultado) {
+    const lat = Number(resultado.lat);
+    const lon = Number(resultado.lon);
+
+    const ponto = { lat, lng: lon };
+
+    setPontoSelecionado(ponto);
+    setEnderecoPreview(resultado.display_name || "");
+    setEnderecoBusca(resultado.display_name || "");
+    setMapCenter([lat, lon]);
+    setMapZoom(17);
+    setResultadosBusca([]);
+  }
+
   async function handleSelecionar(latlng) {
     setPontoSelecionado(latlng);
+    setMapCenter([latlng.lat, latlng.lng]);
+    setMapZoom(17);
     await buscarEndereco(latlng.lat, latlng.lng);
   }
 
@@ -71,12 +137,67 @@ function ModalMapa({ onClose, onConfirm }) {
       <div className="map-modal">
         <h3>Selecionar local no mapa</h3>
 
+        <div className="actions" style={{ marginTop: 16, marginBottom: 12 }}>
+          <input
+            className="input"
+            placeholder="Digite um endereço"
+            value={enderecoBusca}
+            onChange={(e) => setEnderecoBusca(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                pesquisarEndereco();
+              }
+            }}
+          />
+
+          <button
+            type="button"
+            className="action-btn"
+            onClick={pesquisarEndereco}
+            disabled={buscandoLocais}
+          >
+            {buscandoLocais ? "Pesquisando..." : "Pesquisar endereço"}
+          </button>
+        </div>
+
+        {resultadosBusca.length > 0 && (
+          <div
+            style={{
+              marginBottom: 14,
+              maxHeight: 180,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
+            {resultadosBusca.map((resultado, index) => (
+              <button
+                key={`${resultado.place_id}-${index}`}
+                type="button"
+                className="action-btn secondary"
+                style={{
+                  textAlign: "left",
+                  whiteSpace: "normal",
+                  lineHeight: 1.4,
+                }}
+                onClick={() => selecionarResultado(resultado)}
+              >
+                {resultado.display_name}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="map-wrapper">
           <MapContainer
-            center={[-25.5307, -49.2037]}
-            zoom={13}
+            center={mapCenter}
+            zoom={mapZoom}
             style={{ height: "100%", width: "100%" }}
           >
+            <MapUpdater center={mapCenter} zoom={mapZoom} />
+
             <TileLayer
               attribution="&copy; OpenStreetMap"
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -106,7 +227,7 @@ function ModalMapa({ onClose, onConfirm }) {
               <strong>Endereço:</strong> {enderecoPreview}
             </p>
           ) : (
-            <p>Clique no mapa para selecionar um local.</p>
+            <p>Digite um endereço ou clique no mapa para selecionar um local.</p>
           )}
         </div>
 
@@ -182,6 +303,11 @@ function AdminDashboard({ setUser }) {
   const [editEmail, setEditEmail] = useState("");
   const [editSenha, setEditSenha] = useState("");
   const [mostrarSenhaEdicao, setMostrarSenhaEdicao] = useState(false);
+
+  const [tipoNovoDataNascimento, setTipoNovoDataNascimento] = useState("text");
+  const [tipoEditDataNascimento, setTipoEditDataNascimento] = useState("text");
+  const [tipoQrInicio, setTipoQrInicio] = useState("text");
+  const [tipoQrFim, setTipoQrFim] = useState("text");
 
   const [qrcodes, setQrcodes] = useState([]);
   const [carregandoQRCodes, setCarregandoQRCodes] = useState(true);
@@ -545,6 +671,7 @@ function AdminDashboard({ setUser }) {
     setNovoSaldo("");
     setNovaSenha("");
     setMostrarSenha(false);
+    setTipoNovoDataNascimento("text");
   }
 
   function limparFormularioQRCode() {
@@ -554,6 +681,8 @@ function AdminDashboard({ setUser }) {
     setQrFim("");
     setQrRaio("100");
     setQrLocais([]);
+    setTipoQrInicio("text");
+    setTipoQrFim("text");
   }
 
   function iniciarEdicao(user) {
@@ -567,6 +696,7 @@ function AdminDashboard({ setUser }) {
     setEditSenha("");
     setMostrarSenhaEdicao(false);
     setMostrarUsuarios(true);
+    setTipoEditDataNascimento(user.data_nascimento ? "date" : "text");
   }
 
   function cancelarEdicao() {
@@ -579,6 +709,7 @@ function AdminDashboard({ setUser }) {
     setEditEmail("");
     setEditSenha("");
     setMostrarSenhaEdicao(false);
+    setTipoEditDataNascimento("text");
   }
 
   async function criarUsuario() {
@@ -843,19 +974,21 @@ function AdminDashboard({ setUser }) {
                 onChange={(e) => setNovoNome(e.target.value)}
               />
 
-             <div style={{ width: "100%" }}>
-                <label className="color-label">Inserir data de nascimento</label>
-                <input
-                  className="input"
-                  type="date"
-                  value={novoDataNascimento}
-                  onChange={(e) => {
-                    const data = e.target.value;
-                    setNovoDataNascimento(data);
-                    setNovoIdade(calcularIdade(data));
-                  }}
-                />
-              </div>
+              <input
+                className="input"
+                type={tipoNovoDataNascimento}
+                placeholder="Inserir data de nascimento"
+                value={novoDataNascimento}
+                onFocus={() => setTipoNovoDataNascimento("date")}
+                onBlur={() => {
+                  if (!novoDataNascimento) setTipoNovoDataNascimento("text");
+                }}
+                onChange={(e) => {
+                  const data = e.target.value;
+                  setNovoDataNascimento(data);
+                  setNovoIdade(calcularIdade(data));
+                }}
+              />
 
               <select
                 className="input"
@@ -1118,19 +1251,23 @@ function AdminDashboard({ setUser }) {
                             onChange={(e) => setEditNome(e.target.value)}
                           />
 
-                          <div style={{ width: "100%" }}>
-                            <label className="color-label">Inserir data de nascimento</label>
-                            <input
-                              className="input"
-                              type="date"
-                              value={editDataNascimento}
-                              onChange={(e) => {
-                                const data = e.target.value;
-                                setEditDataNascimento(data);
-                                setEditIdade(calcularIdade(data));
-                              }}
-                            />
-                          </div>
+                          <input
+                            className="input"
+                            type={tipoEditDataNascimento}
+                            placeholder="Inserir data de nascimento"
+                            value={editDataNascimento}
+                            onFocus={() => setTipoEditDataNascimento("date")}
+                            onBlur={() => {
+                              if (!editDataNascimento) {
+                                setTipoEditDataNascimento("text");
+                              }
+                            }}
+                            onChange={(e) => {
+                              const data = e.target.value;
+                              setEditDataNascimento(data);
+                              setEditIdade(calcularIdade(data));
+                            }}
+                          />
 
                           <select
                             className="input"
@@ -1457,30 +1594,35 @@ function AdminDashboard({ setUser }) {
 
               <input
                 className="input"
-                type="datetime-local"
+                type={tipoQrInicio}
+                placeholder="Inserir data e hora de início"
                 value={qrInicio}
+                onFocus={() => setTipoQrInicio("datetime-local")}
+                onBlur={() => {
+                  if (!qrInicio) setTipoQrInicio("text");
+                }}
                 onChange={(e) => setQrInicio(e.target.value)}
               />
 
-              <div style={{ width: "100%" }}>
-                <label className="color-label">Inserir data e hora de início</label>
-                <input
-                  className="input"
-                  type="datetime-local"
-                  value={qrInicio}
-                  onChange={(e) => setQrInicio(e.target.value)}
-                />
-              </div>
-              
-              <div style={{ width: "100%" }}>
-                <label className="color-label">Inserir data e hora de fim</label>
-                <input
-                  className="input"
-                  type="datetime-local"
-                  value={qrFim}
-                  onChange={(e) => setQrFim(e.target.value)}
-                />
-              </div>
+              <input
+                className="input"
+                type={tipoQrFim}
+                placeholder="Inserir data e hora de fim"
+                value={qrFim}
+                onFocus={() => setTipoQrFim("datetime-local")}
+                onBlur={() => {
+                  if (!qrFim) setTipoQrFim("text");
+                }}
+                onChange={(e) => setQrFim(e.target.value)}
+              />
+
+              <input
+                className="input"
+                placeholder="Raio em metros (opcional)"
+                type="number"
+                value={qrRaio}
+                onChange={(e) => setQrRaio(e.target.value)}
+              />
 
               <button
                 type="button"

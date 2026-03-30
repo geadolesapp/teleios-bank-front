@@ -243,7 +243,6 @@ function ModalMapa({ onClose, onConfirm }) {
     </div>
   );
 }
-
 function SectionCard({
   title,
   subtitle,

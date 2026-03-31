@@ -1987,13 +1987,15 @@ function AdminDashboard({ setUser }) {
                           {info.posicao} {formatarNomeRanking(item.nome)}
                         </strong>
                       </div>
-                      
-                      <div className="ranking-direita">
-                        <div className="ranking-nivel">{nivelRanking}</div>
-                        <div className="ranking-saldo">
-                          {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
-                        </div>
+                    </div>
+
+                    <div className="ranking-direita">
+                      <div className="ranking-nivel">{nivelRanking}</div>
+                      <div className="ranking-saldo">
+                        {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
                       </div>
+                    </div>
+                  </div>
                 );
               })
             )}
@@ -2025,12 +2027,14 @@ function AdminDashboard({ setUser }) {
                         <strong>
                           {info.posicao} {formatarNomeRanking(item.nome)}
                         </strong>
-                        <div className="ranking-nivel">{nivelRanking}</div>
                       </div>
                     </div>
 
-                    <div className="ranking-saldo">
-                      {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                    <div className="ranking-direita">
+                      <div className="ranking-nivel">{nivelRanking}</div>
+                      <div className="ranking-saldo">
+                        {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                      </div>
                     </div>
                   </div>
                 );

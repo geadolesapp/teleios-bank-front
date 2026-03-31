@@ -35,6 +35,10 @@ function Login({ setUser, layoutConfig }) {
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
   }, [layoutConfig]);
 
+  const nuvem1 = `${process.env.PUBLIC_URL}/nuvem_1.png`;
+  const nuvem2 = `${process.env.PUBLIC_URL}/nuvem_2.png`;
+  const nuvem3 = `${process.env.PUBLIC_URL}/nuvem_3.png`;
+
   useEffect(() => {
     const plataformaDetectada = detectarPlataforma();
     setPlataforma(plataformaDetectada);
@@ -92,6 +96,21 @@ function Login({ setUser, layoutConfig }) {
 
   return (
     <div className="container app-theme-bg login-page">
+      <div className="login-clouds">
+        <div
+          className="login-cloud login-cloud-1"
+          style={{ backgroundImage: `url(${nuvem1})` }}
+        />
+        <div
+          className="login-cloud login-cloud-2"
+          style={{ backgroundImage: `url(${nuvem2})` }}
+        />
+        <div
+          className="login-cloud login-cloud-3"
+          style={{ backgroundImage: `url(${nuvem3})` }}
+        />
+      </div>
+
       <div className="page-shell login-shell">
         <div className="login-content">
           <div className="login-card glass-card">

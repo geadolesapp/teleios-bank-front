@@ -71,6 +71,7 @@ function Dashboard({ user, setUser }) {
   const [mensagens, setMensagens] = useState([]);
   const [mostrarMensagens, setMostrarMensagens] = useState(false);
   const [mensagemPopup, setMensagemPopup] = useState(null);
+  const [mostrarExtratoCompleto, setMostrarExtratoCompleto] = useState(false);
 
   const inputFotoRef = useRef(null);
 
@@ -246,10 +247,18 @@ function Dashboard({ user, setUser }) {
       };
     }
 
+    if (index === 2) {
+      return {
+        medalha: "🥉",
+        classe: "ranking-card ranking-terceiro",
+        posicao: "3º",
+      };
+    }
+
     return {
-      medalha: "🥉",
-      classe: "ranking-card ranking-terceiro",
-      posicao: "3º",
+      medalha: "🏅",
+      classe: "ranking-card",
+      posicao: `${index + 1}º`,
     };
   }
 
@@ -287,11 +296,23 @@ function Dashboard({ user, setUser }) {
     return 500 - resto;
   }
 
+  function formatarNomeRanking(nome) {
+    if (!nome) return "";
+
+    const partes = nome.trim().split(/\s+/).filter(Boolean);
+
+    if (partes.length <= 1) return partes[0] || "";
+    return `${partes[0]} ${partes[partes.length - 1]}`;
+  }
+
   const notificacoesNaoLidas = mensagens.filter((m) => !m.lida).length;
   const saldoAtual = Number(dadosUsuario?.saldo || 0);
   const nivelAtual = getNivelPorSaldo(saldoAtual);
   const progressoNivel = getProgressoNivel(saldoAtual);
   const coinsProximoNivel = getCoinsParaProximoNivel(saldoAtual);
+
+  const extratoVisivel = extrato.slice(0, 4);
+  const extratoExpandido = extrato.slice(4);
 
   if (loading) {
     return (
@@ -346,6 +367,9 @@ function Dashboard({ user, setUser }) {
 
             <div>
               <span className="user-name">Olá, {dadosUsuario?.nome}</span>
+              <div style={{ color: "#6ecbff", fontSize: 13, marginTop: 4 }}>
+                {nivelAtual}
+              </div>
               <div style={{ color: "#9fb3c8", fontSize: 13 }}>
                 Toque na foto para alterar
               </div>
@@ -498,7 +522,7 @@ function Dashboard({ user, setUser }) {
 
                       <div className="ranking-textos">
                         <strong>
-                          {info.posicao} {item.nome}
+                          {info.posicao} {formatarNomeRanking(item.nome)}
                         </strong>
                         <div className="ranking-nivel">{nivelRanking}</div>
                       </div>
@@ -519,24 +543,66 @@ function Dashboard({ user, setUser }) {
             {extrato.length === 0 ? (
               <p style={{ color: "#ccc" }}>Nenhuma movimentação encontrada.</p>
             ) : (
-              extrato.map((item) => (
-                <div className="extrato-item" key={item._id}>
-                  <div>
-                    <strong>{item.descricao}</strong>
-                    <div className="extrato-data">
-                      {new Date(item.createdAt).toLocaleString("pt-BR")}
+              <>
+                {extratoVisivel.map((item) => (
+                  <div className="extrato-item" key={item._id}>
+                    <div>
+                      <strong>{item.descricao}</strong>
+                      <div className="extrato-data">
+                        {new Date(item.createdAt).toLocaleString("pt-BR")}
+                      </div>
+                    </div>
+
+                    <div
+                      className={
+                        item.tipo === "entrada" ? "valor-entrada" : "valor-saida"
+                      }
+                    >
+                      {item.tipo === "entrada" ? "+" : "-"} {item.valor} Coins
                     </div>
                   </div>
+                ))}
 
-                  <div
-                    className={
-                      item.tipo === "entrada" ? "valor-entrada" : "valor-saida"
-                    }
-                  >
-                    {item.tipo === "entrada" ? "+" : "-"} {item.valor} Coins
+                {extratoExpandido.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      className="action-btn secondary"
+                      onClick={() =>
+                        setMostrarExtratoCompleto((prev) => !prev)
+                      }
+                    >
+                      {mostrarExtratoCompleto
+                        ? "Ocultar movimentações antigas"
+                        : `Mostrar mais ${extratoExpandido.length} movimentações`}
+                    </button>
+
+                    {mostrarExtratoCompleto && (
+                      <div style={{ marginTop: 12 }}>
+                        {extratoExpandido.map((item) => (
+                          <div className="extrato-item" key={item._id}>
+                            <div>
+                              <strong>{item.descricao}</strong>
+                              <div className="extrato-data">
+                                {new Date(item.createdAt).toLocaleString("pt-BR")}
+                              </div>
+                            </div>
+
+                            <div
+                              className={
+                                item.tipo === "entrada"
+                                  ? "valor-entrada"
+                                  : "valor-saida"
+                              }
+                            >
+                              {item.tipo === "entrada" ? "+" : "-"} {item.valor} Coins
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
         </div>

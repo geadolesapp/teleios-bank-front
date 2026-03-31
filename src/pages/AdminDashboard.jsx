@@ -481,6 +481,32 @@ function AdminDashboard({ setUser }) {
     return converterIsoParaDataBR(valor) || "-";
   }
 
+  function formatarNomeRanking(nome) {
+    if (!nome) return "";
+
+    const partes = nome.trim().split(/\s+/).filter(Boolean);
+
+    if (partes.length <= 1) return partes[0] || "";
+    return `${partes[0]} ${partes[partes.length - 1]}`;
+  }
+
+  function getNivelPorSaldo(saldo) {
+    const saldoAtual = Number(saldo || 0);
+
+    const niveis = [
+      "Nível 1",
+      "Pro",
+      "Elite",
+      "Legend",
+      "Master",
+      "Supreme",
+      "Omega",
+    ];
+
+    const indice = Math.floor(saldoAtual / 500);
+    return niveis[indice] || `Nível ${indice + 1}`;
+  }
+
   function getRankingInfo(index) {
     if (index === 0) {
       return {
@@ -498,10 +524,18 @@ function AdminDashboard({ setUser }) {
       };
     }
 
+    if (index === 2) {
+      return {
+        medalha: "🥉",
+        classe: "ranking-card ranking-terceiro",
+        posicao: "3º",
+      };
+    }
+
     return {
-      medalha: "🥉",
-      classe: "ranking-card ranking-terceiro",
-      posicao: "3º",
+      medalha: "🏅",
+      classe: "ranking-card",
+      posicao: `${index + 1}º`,
     };
   }
 
@@ -511,6 +545,61 @@ function AdminDashboard({ setUser }) {
     if (grupo === "ge") return "Enviada para o grupo GE";
     return "Grupo não identificado";
   }
+
+  function obterIdadeUsuario(user) {
+    if (Number.isFinite(Number(user?.idade)) && Number(user.idade) > 0) {
+      return Number(user.idade);
+    }
+
+    return Number(calcularIdade(user?.data_nascimento)) || 0;
+  }
+
+  function obterTimestampNascimento(user) {
+    const dataBR = converterIsoParaDataBR(user?.data_nascimento || "");
+
+    if (!validarDataBR(dataBR)) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
+    const [dia, mes, ano] = dataBR.split("/").map(Number);
+    return new Date(ano, mes - 1, dia).getTime();
+  }
+
+  function compararRanking(a, b) {
+    const saldoA = Number(a?.saldo || 0);
+    const saldoB = Number(b?.saldo || 0);
+
+    if (saldoB !== saldoA) {
+      return saldoB - saldoA;
+    }
+
+    const nascimentoA = obterTimestampNascimento(a);
+    const nascimentoB = obterTimestampNascimento(b);
+
+    if (nascimentoA !== nascimentoB) {
+      return nascimentoA - nascimentoB;
+    }
+
+    return (a?.nome || "").localeCompare(b?.nome || "", "pt-BR");
+  }
+
+  const rankingNextCompleto = useMemo(() => {
+    return [...users]
+      .filter((user) => {
+        const idade = obterIdadeUsuario(user);
+        return idade >= 11 && idade <= 13;
+      })
+      .sort(compararRanking);
+  }, [users]);
+
+  const rankingGECompleto = useMemo(() => {
+    return [...users]
+      .filter((user) => {
+        const idade = obterIdadeUsuario(user);
+        return idade >= 14 && idade <= 17;
+      })
+      .sort(compararRanking);
+  }, [users]);
 
   async function carregarUsuarios() {
     try {
@@ -1934,15 +2023,16 @@ function AdminDashboard({ setUser }) {
             open={mostrarRankingNext}
             onToggle={() => setMostrarRankingNext(!mostrarRankingNext)}
           >
-            {carregandoRankingsAdmin ? (
+            {loading || carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
-            ) : rankingNext.length === 0 ? (
+            ) : rankingNextCompleto.length === 0 ? (
               <p style={{ color: "#ccc" }}>
                 Nenhum usuário encontrado no ranking Next.
               </p>
             ) : (
-              rankingNext.map((item, index) => {
+              rankingNextCompleto.map((item, index) => {
                 const info = getRankingInfo(index);
+                const nivelRanking = getNivelPorSaldo(item.saldo);
 
                 return (
                   <div className={info.classe} key={item._id}>
@@ -1951,9 +2041,9 @@ function AdminDashboard({ setUser }) {
 
                       <div className="ranking-textos">
                         <strong>
-                          {info.posicao} {item.nome}
+                          {info.posicao} {formatarNomeRanking(item.nome)}
                         </strong>
-                        <div className="ranking-nivel">{item.idade} anos</div>
+                        <div className="ranking-nivel">{nivelRanking}</div>
                       </div>
                     </div>
 
@@ -1972,15 +2062,16 @@ function AdminDashboard({ setUser }) {
             open={mostrarRankingGE}
             onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
           >
-            {carregandoRankingsAdmin ? (
+            {loading || carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
-            ) : rankingGE.length === 0 ? (
+            ) : rankingGECompleto.length === 0 ? (
               <p style={{ color: "#ccc" }}>
                 Nenhum usuário encontrado no ranking GE.
               </p>
             ) : (
-              rankingGE.map((item, index) => {
+              rankingGECompleto.map((item, index) => {
                 const info = getRankingInfo(index);
+                const nivelRanking = getNivelPorSaldo(item.saldo);
 
                 return (
                   <div className={info.classe} key={item._id}>
@@ -1989,9 +2080,9 @@ function AdminDashboard({ setUser }) {
 
                       <div className="ranking-textos">
                         <strong>
-                          {info.posicao} {item.nome}
+                          {info.posicao} {formatarNomeRanking(item.nome)}
                         </strong>
-                        <div className="ranking-nivel">{item.idade} anos</div>
+                        <div className="ranking-nivel">{nivelRanking}</div>
                       </div>
                     </div>
 

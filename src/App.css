@@ -88,10 +88,7 @@ body.theme-clouds-off .app-theme-bg {
 
 /* NUVENS SOMENTE NA TELA DE LOGIN */
 .login-page.app-theme-bg {
-  background-image:
-    url("/nuvem_1.png"),
-    url("/nuvem_2.png"),
-    url("/nuvem_3.png"),
+  background:
     radial-gradient(
       circle at 15% 12%,
       rgba(255, 255, 255, 0.18),
@@ -113,38 +110,7 @@ body.theme-clouds-off .app-theme-bg {
       var(--cor-secundaria) 55%,
       var(--bg-base) 100%
     );
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat;
-  background-position:
-    left -70px top 105px,
-    right -65px top 200px,
-    center bottom 55px,
-    center,
-    center,
-    center,
-    center;
-  background-size:
-    280px auto,
-    250px auto,
-    360px auto,
-    auto,
-    auto,
-    auto,
-    auto;
-  background-attachment:
-    scroll,
-    scroll,
-    scroll,
-    fixed,
-    fixed,
-    fixed,
-    fixed;
+  background-attachment: fixed;
 }
 
 body.theme-clouds-off .login-page.app-theme-bg {
@@ -158,6 +124,44 @@ body.theme-clouds-off .login-page.app-theme-bg {
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
+}
+
+.login-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.login-cloud {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  opacity: 1;
+}
+
+.login-cloud-1 {
+  width: 280px;
+  height: 180px;
+  left: -70px;
+  top: 105px;
+}
+
+.login-cloud-2 {
+  width: 250px;
+  height: 165px;
+  right: -65px;
+  top: 200px;
+}
+
+.login-cloud-3 {
+  width: 360px;
+  height: 200px;
+  left: 50%;
+  bottom: 55px;
+  transform: translateX(-50%);
 }
 
 .login-shell {
@@ -853,23 +857,24 @@ select.input {
 
 /* RESPONSIVO */
 @media (max-width: 768px) {
-  .login-page.app-theme-bg {
-    background-position:
-      left -95px top 150px,
-      right -90px top 255px,
-      center bottom 95px,
-      center,
-      center,
-      center,
-      center;
-    background-size:
-      220px auto,
-      210px auto,
-      270px auto,
-      auto,
-      auto,
-      auto,
-      auto;
+  .login-cloud-1 {
+    width: 220px;
+    height: 145px;
+    left: -95px;
+    top: 150px;
+  }
+
+  .login-cloud-2 {
+    width: 210px;
+    height: 140px;
+    right: -90px;
+    top: 255px;
+  }
+
+  .login-cloud-3 {
+    width: 270px;
+    height: 155px;
+    bottom: 95px;
   }
 }
 
@@ -904,23 +909,24 @@ select.input {
     font-size: 15px;
   }
 
-  .login-page.app-theme-bg {
-    background-position:
-      left -105px top 165px,
-      right -100px top 285px,
-      center bottom 105px,
-      center,
-      center,
-      center,
-      center;
-    background-size:
-      200px auto,
-      190px auto,
-      240px auto,
-      auto,
-      auto,
-      auto,
-      auto;
+  .login-cloud-1 {
+    width: 200px;
+    height: 130px;
+    left: -105px;
+    top: 165px;
+  }
+
+  .login-cloud-2 {
+    width: 190px;
+    height: 125px;
+    right: -100px;
+    top: 285px;
+  }
+
+  .login-cloud-3 {
+    width: 240px;
+    height: 140px;
+    bottom: 105px;
   }
 }
 

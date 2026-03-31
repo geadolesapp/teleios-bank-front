@@ -303,6 +303,18 @@ function Dashboard({ user, setUser }) {
     return `${partes[0]} ${partes[partes.length - 1]}`;
   }
 
+  function obterUrlAvatar(foto) {
+    if (!foto) {
+      return "https://i.pravatar.cc/100";
+    }
+
+    if (/^https?:\/\//i.test(foto)) {
+      return foto;
+    }
+
+    return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
+  }
+
   const notificacoesNaoLidas = mensagens.filter((m) => !m.lida).length;
   const saldoAtual = Number(dadosUsuario?.saldo || 0);
   const nivelAtual = getNivelPorSaldo(saldoAtual);
@@ -341,11 +353,7 @@ function Dashboard({ user, setUser }) {
               title="Clique para alterar a foto"
             >
               <img
-                src={
-                  dadosUsuario?.foto
-                    ? `${api.defaults.baseURL.replace("/api", "")}${dadosUsuario.foto}`
-                    : "https://i.pravatar.cc/100"
-                }
+                src={obterUrlAvatar(dadosUsuario?.foto)}
                 alt="avatar"
                 className="avatar"
               />
@@ -567,7 +575,9 @@ function Dashboard({ user, setUser }) {
                   <div style={{ marginTop: 12 }}>
                     <button
                       className="action-btn secondary"
-                      onClick={() => setMostrarExtratoCompleto(!mostrarExtratoCompleto)}
+                      onClick={() =>
+                        setMostrarExtratoCompleto(!mostrarExtratoCompleto)
+                      }
                     >
                       {mostrarExtratoCompleto
                         ? "Ocultar movimentações antigas"

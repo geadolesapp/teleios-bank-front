@@ -298,9 +298,7 @@ function Dashboard({ user, setUser }) {
 
   function formatarNomeRanking(nome) {
     if (!nome) return "";
-
     const partes = nome.trim().split(/\s+/).filter(Boolean);
-
     if (partes.length <= 1) return partes[0] || "";
     return `${partes[0]} ${partes[partes.length - 1]}`;
   }
@@ -312,7 +310,7 @@ function Dashboard({ user, setUser }) {
   const coinsProximoNivel = getCoinsParaProximoNivel(saldoAtual);
 
   const extratoVisivel = extrato.slice(0, 4);
-  const extratoExpandido = extrato.slice(4);
+  const extratoRestante = extrato.slice(4);
 
   if (loading) {
     return (
@@ -563,22 +561,20 @@ function Dashboard({ user, setUser }) {
                   </div>
                 ))}
 
-                {extratoExpandido.length > 0 && (
+                {extratoRestante.length > 0 && (
                   <div style={{ marginTop: 12 }}>
                     <button
                       className="action-btn secondary"
-                      onClick={() =>
-                        setMostrarExtratoCompleto((prev) => !prev)
-                      }
+                      onClick={() => setMostrarExtratoCompleto(!mostrarExtratoCompleto)}
                     >
                       {mostrarExtratoCompleto
                         ? "Ocultar movimentações antigas"
-                        : `Mostrar mais ${extratoExpandido.length} movimentações`}
+                        : `Mostrar mais ${extratoRestante.length} movimentações`}
                     </button>
 
                     {mostrarExtratoCompleto && (
                       <div style={{ marginTop: 12 }}>
-                        {extratoExpandido.map((item) => (
+                        {extratoRestante.map((item) => (
                           <div className="extrato-item" key={item._id}>
                             <div>
                               <strong>{item.descricao}</strong>

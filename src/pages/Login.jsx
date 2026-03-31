@@ -35,9 +35,9 @@ function Login({ setUser, layoutConfig }) {
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
   }, [layoutConfig]);
 
-  const nuvem1 = `${process.env.PUBLIC_URL}/nuvem_1.png`;
-  const nuvem2 = `${process.env.PUBLIC_URL}/nuvem_2.png`;
-  const nuvem3 = `${process.env.PUBLIC_URL}/nuvem_3.png`;
+  const nuvem1 = `${process.env.PUBLIC_URL}/nuvem-1.png`;
+  const nuvem2 = `${process.env.PUBLIC_URL}/nuvem--2.png`;
+  const nuvem3 = `${process.env.PUBLIC_URL}/nuvem--3.png`;
 
   useEffect(() => {
     const plataformaDetectada = detectarPlataforma();

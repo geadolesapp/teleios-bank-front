@@ -341,6 +341,15 @@ function AdminDashboard({ setUser }) {
   const [layoutFonte, setLayoutFonte] = useState("Inter");
   const [layoutMostrarNuvens, setLayoutMostrarNuvens] = useState(true);
   const [layoutLogoArquivo, setLayoutLogoArquivo] = useState(null);
+  const [layoutNomesNiveis, setLayoutNomesNiveis] = useState([
+      "Nível 1",
+      "Pro",
+      "Elite",
+      "Legend",
+      "Master",
+      "Supreme",
+      "Omega",
+    ]);
   const [salvandoLayout, setSalvandoLayout] = useState(false);
 
   const [mensagensAdmin, setMensagensAdmin] = useState([]);
@@ -490,17 +499,12 @@ function AdminDashboard({ setUser }) {
 
   function getNivelPorSaldo(saldo) {
     const saldoAtual = Number(saldo || 0);
-
-    const niveis = [
-      "Nível 1",
-      "Pro",
-      "Elite",
-      "Legend",
-      "Master",
-      "Supreme",
-      "Omega",
-    ];
-
+  
+    const niveis =
+      Array.isArray(layoutNomesNiveis) && layoutNomesNiveis.length === 7
+        ? layoutNomesNiveis
+        : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
+  
     const indice = Math.floor(saldoAtual / 500);
     return niveis[indice] || `Nível ${indice + 1}`;
   }
@@ -542,6 +546,14 @@ function AdminDashboard({ setUser }) {
     if (grupo === "next") return "Enviada para o grupo Next";
     if (grupo === "ge") return "Enviada para o grupo GE";
     return "Grupo não identificado";
+  }
+
+  function atualizarNomeNivel(index, valor) {
+    setLayoutNomesNiveis((prev) => {
+      const novos = [...prev];
+      novos[index] = valor;
+      return novos;
+    });
   }
 
   async function carregarUsuarios() {
@@ -607,6 +619,11 @@ function AdminDashboard({ setUser }) {
       setLayoutCorDestaque(config.accent_color || "#6ecbff");
       setLayoutFonte(config.font_family || "Inter");
       setLayoutMostrarNuvens(!!config.show_clouds);
+      setLayoutNomesNiveis(
+        Array.isArray(config.level_names) && config.level_names.length === 7
+          ? config.level_names
+          : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
+      );
     } catch (error) {
       console.error("Erro ao carregar layout:", error);
     }
@@ -623,6 +640,7 @@ function AdminDashboard({ setUser }) {
         accent_color: layoutCorDestaque,
         font_family: layoutFonte,
         show_clouds: layoutMostrarNuvens,
+        level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
 
       if (layoutLogoArquivo) {
@@ -1718,6 +1736,19 @@ function AdminDashboard({ setUser }) {
                     setLayoutLogoArquivo(e.target.files?.[0] || null)
                   }
                 />
+              </div>
+
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Nomes dos níveis</label>
+                {layoutNomesNiveis.map((nivel, index) => (
+                  <input
+                    key={index}
+                    className="input"
+                    placeholder={`Nome do nível ${index + 1}`}
+                    value={nivel}
+                    onChange={(e) => atualizarNomeNivel(index, e.target.value)}
+                  />
+                ))}
               </div>
 
               <button

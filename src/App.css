@@ -86,6 +86,80 @@ body.theme-clouds-off .app-theme-bg {
   min-height: 100vh;
 }
 
+/* NUVENS SOMENTE NA TELA DE LOGIN */
+.login-page.app-theme-bg {
+  background-image:
+    url("/nuvem_1.png"),
+    url("/nuvem_2.png"),
+    url("/nuvem_3.png"),
+    radial-gradient(
+      circle at 15% 12%,
+      rgba(255, 255, 255, 0.18),
+      transparent 10%
+    ),
+    radial-gradient(
+      circle at 82% 14%,
+      rgba(255, 255, 255, 0.12),
+      transparent 11%
+    ),
+    radial-gradient(
+      circle at 30% 45%,
+      rgba(255, 255, 255, 0.08),
+      transparent 13%
+    ),
+    linear-gradient(
+      180deg,
+      var(--cor-destaque) 0%,
+      var(--cor-secundaria) 55%,
+      var(--bg-base) 100%
+    );
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
+  background-position:
+    left -70px top 105px,
+    right -65px top 200px,
+    center bottom 55px,
+    center,
+    center,
+    center,
+    center;
+  background-size:
+    280px auto,
+    250px auto,
+    360px auto,
+    auto,
+    auto,
+    auto,
+    auto;
+  background-attachment:
+    scroll,
+    scroll,
+    scroll,
+    fixed,
+    fixed,
+    fixed,
+    fixed;
+}
+
+body.theme-clouds-off .login-page.app-theme-bg {
+  background-image: linear-gradient(
+    180deg,
+    var(--cor-destaque) 0%,
+    var(--cor-secundaria) 55%,
+    var(--bg-base) 100%
+  );
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
 .login-shell {
   min-height: 100vh;
   justify-content: space-between;
@@ -97,6 +171,8 @@ body.theme-clouds-off .app-theme-bg {
   align-items: center;
   justify-content: center;
   padding: 40px 20px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 /* CARDS GLASS / FUMÊ */
@@ -776,6 +852,27 @@ select.input {
 }
 
 /* RESPONSIVO */
+@media (max-width: 768px) {
+  .login-page.app-theme-bg {
+    background-position:
+      left -95px top 150px,
+      right -90px top 255px,
+      center bottom 95px,
+      center,
+      center,
+      center,
+      center;
+    background-size:
+      220px auto,
+      210px auto,
+      270px auto,
+      auto,
+      auto,
+      auto,
+      auto;
+  }
+}
+
 @media (max-width: 500px) {
   .dashboard-content {
     margin-top: 30px;
@@ -805,6 +902,25 @@ select.input {
 
   .ranking-saldo {
     font-size: 15px;
+  }
+
+  .login-page.app-theme-bg {
+    background-position:
+      left -105px top 165px,
+      right -100px top 285px,
+      center bottom 105px,
+      center,
+      center,
+      center,
+      center;
+    background-size:
+      200px auto,
+      190px auto,
+      240px auto,
+      auto,
+      auto,
+      auto,
+      auto;
   }
 }
 

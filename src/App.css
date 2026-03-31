@@ -143,24 +143,24 @@ body.theme-clouds-off .login-page.app-theme-bg {
 }
 
 .login-cloud-1 {
-  width: 280px;
-  height: 180px;
-  left: -70px;
-  top: 105px;
+  width: 360px;
+  height: 220px;
+  left: -40px;
+  top: 85px;
 }
 
 .login-cloud-2 {
-  width: 250px;
-  height: 165px;
-  right: -65px;
-  top: 200px;
+  width: 330px;
+  height: 205px;
+  right: -35px;
+  top: 150px;
 }
 
 .login-cloud-3 {
-  width: 360px;
-  height: 200px;
+  width: 430px;
+  height: 240px;
   left: 50%;
-  bottom: 55px;
+  bottom: 95px;
   transform: translateX(-50%);
 }
 
@@ -858,23 +858,23 @@ select.input {
 /* RESPONSIVO */
 @media (max-width: 768px) {
   .login-cloud-1 {
-    width: 220px;
-    height: 145px;
-    left: -95px;
-    top: 150px;
+    width: 280px;
+    height: 170px;
+    left: -70px;
+    top: 120px;
   }
 
   .login-cloud-2 {
-    width: 210px;
-    height: 140px;
-    right: -90px;
-    top: 255px;
+    width: 260px;
+    height: 160px;
+    right: -65px;
+    top: 210px;
   }
 
   .login-cloud-3 {
-    width: 270px;
-    height: 155px;
-    bottom: 95px;
+    width: 320px;
+    height: 185px;
+    bottom: 115px;
   }
 }
 
@@ -910,23 +910,23 @@ select.input {
   }
 
   .login-cloud-1 {
-    width: 200px;
-    height: 130px;
-    left: -105px;
-    top: 165px;
+    width: 230px;
+    height: 145px;
+    left: -65px;
+    top: 135px;
   }
 
   .login-cloud-2 {
-    width: 190px;
-    height: 125px;
-    right: -100px;
-    top: 285px;
+    width: 220px;
+    height: 140px;
+    right: -60px;
+    top: 235px;
   }
 
   .login-cloud-3 {
-    width: 240px;
-    height: 140px;
-    bottom: 105px;
+    width: 270px;
+    height: 160px;
+    bottom: 120px;
   }
 }
 

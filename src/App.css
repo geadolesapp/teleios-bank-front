@@ -528,22 +528,44 @@ select.input {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .ranking-medalha {
   font-size: 20px;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.ranking-textos {
+  min-width: 0;
+  flex: 1;
 }
 
 .ranking-textos strong {
-  font-size: 18px;
+  display: block;
+  font-size: 17px;
   font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  word-break: break-word;
+}
+
+.ranking-direita {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .ranking-saldo {
   font-size: 18px;
   font-weight: 700;
   white-space: nowrap;
+  text-align: right;
 }
 
 .ranking-primeiro {
@@ -763,9 +785,26 @@ select.input {
     font-size: 28px;
   }
 
-  .ranking-textos strong,
+  .ranking-card {
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .ranking-esquerda {
+    gap: 8px;
+  }
+
+  .ranking-textos strong {
+    font-size: 15px;
+  }
+
+  .ranking-nivel {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+
   .ranking-saldo {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 
@@ -918,7 +957,7 @@ select.input {
 }
 
 .ranking-nivel {
-  margin-top: 4px;
+  margin-top: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -929,6 +968,7 @@ select.input {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .main-card .actions,

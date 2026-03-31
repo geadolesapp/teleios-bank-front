@@ -9,7 +9,8 @@ function detectarPlataforma() {
   const ua = navigator.userAgent || navigator.vendor || window.opera;
 
   const isAndroid = /android/i.test(ua);
-  const isIOS = /iPad|iPhone|iPod/.test(ua) || 
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
   if (isAndroid) return "android";

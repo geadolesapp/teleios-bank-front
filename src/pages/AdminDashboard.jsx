@@ -243,6 +243,7 @@ function ModalMapa({ onClose, onConfirm }) {
     </div>
   );
 }
+
 function SectionCard({
   title,
   subtitle,
@@ -303,19 +304,16 @@ function AdminDashboard({ setUser }) {
   const [editSenha, setEditSenha] = useState("");
   const [mostrarSenhaEdicao, setMostrarSenhaEdicao] = useState(false);
 
-  const [tipoNovoDataNascimento, setTipoNovoDataNascimento] = useState("text");
-  const [tipoEditDataNascimento, setTipoEditDataNascimento] = useState("text");
-  const [tipoQrInicio, setTipoQrInicio] = useState("text");
-  const [tipoQrFim, setTipoQrFim] = useState("text");
-
   const [qrcodes, setQrcodes] = useState([]);
   const [carregandoQRCodes, setCarregandoQRCodes] = useState(true);
   const [salvandoQRCode, setSalvandoQRCode] = useState(false);
 
   const [qrNome, setQrNome] = useState("");
   const [qrValor, setQrValor] = useState("");
-  const [qrInicio, setQrInicio] = useState("");
-  const [qrFim, setQrFim] = useState("");
+  const [qrDataInicio, setQrDataInicio] = useState("");
+  const [qrHoraInicio, setQrHoraInicio] = useState("");
+  const [qrDataFim, setQrDataFim] = useState("");
+  const [qrHoraFim, setQrHoraFim] = useState("");
   const [qrRaio, setQrRaio] = useState("100");
   const [qrLocais, setQrLocais] = useState([]);
   const [mostrarMapa, setMostrarMapa] = useState(false);
@@ -372,20 +370,115 @@ function AdminDashboard({ setUser }) {
     carregarRankingsAdmin();
   }, []);
 
+  function aplicarMascaraData(valor) {
+    const numeros = valor.replace(/\D/g, "").slice(0, 8);
+
+    if (numeros.length <= 2) return numeros;
+    if (numeros.length <= 4) return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
+
+    return `${numeros.slice(0, 2)}/${numeros.slice(2, 4)}/${numeros.slice(4)}`;
+  }
+
+  function aplicarMascaraHora(valor) {
+    const numeros = valor.replace(/\D/g, "").slice(0, 4);
+
+    if (numeros.length <= 2) return numeros;
+
+    return `${numeros.slice(0, 2)}:${numeros.slice(2)}`;
+  }
+
+  function converterIsoParaDataBR(valor) {
+    if (!valor) return "";
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+      return valor;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+      const [ano, mes, dia] = valor.split("-");
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    const data = new Date(valor);
+
+    if (Number.isNaN(data.getTime())) return "";
+
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = String(data.getFullYear());
+
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  function validarDataBR(valor) {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) return false;
+
+    const [dia, mes, ano] = valor.split("/").map(Number);
+    const data = new Date(ano, mes - 1, dia);
+
+    return (
+      data.getFullYear() === ano &&
+      data.getMonth() === mes - 1 &&
+      data.getDate() === dia
+    );
+  }
+
+  function validarHora(valor) {
+    if (!/^\d{2}:\d{2}$/.test(valor)) return false;
+
+    const [hora, minuto] = valor.split(":").map(Number);
+
+    return hora >= 0 && hora <= 23 && minuto >= 0 && minuto <= 59;
+  }
+
+  function converterDataBRParaISO(valor) {
+    if (!valor) return "";
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+      return valor;
+    }
+
+    if (!validarDataBR(valor)) return "";
+
+    const [dia, mes, ano] = valor.split("/");
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  function montarDataHoraISO(dataBR, hora) {
+    if (!validarDataBR(dataBR) || !validarHora(hora)) return "";
+
+    const [dia, mes, ano] = dataBR.split("/").map(Number);
+    const [horas, minutos] = hora.split(":").map(Number);
+
+    return new Date(ano, mes - 1, dia, horas, minutos, 0, 0).toISOString();
+  }
+
   function calcularIdade(dataNascimento) {
     if (!dataNascimento) return "";
 
+    const dataBR = converterIsoParaDataBR(dataNascimento);
+
+    if (!validarDataBR(dataBR)) return "";
+
+    const [dia, mes, ano] = dataBR.split("/").map(Number);
     const hoje = new Date();
-    const nascimento = new Date(dataNascimento);
+    const nascimento = new Date(ano, mes - 1, dia);
 
     let idade = hoje.getFullYear() - nascimento.getFullYear();
-    const mes = hoje.getMonth() - nascimento.getMonth();
+    const diferencaMes = hoje.getMonth() - nascimento.getMonth();
 
-    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+    if (
+      diferencaMes < 0 ||
+      (diferencaMes === 0 && hoje.getDate() < nascimento.getDate())
+    ) {
       idade--;
     }
 
     return idade >= 0 ? String(idade) : "";
+  }
+
+  function formatarDataExibicao(valor) {
+    return converterIsoParaDataBR(valor) || "-";
   }
 
   function getRankingInfo(index) {
@@ -670,24 +763,23 @@ function AdminDashboard({ setUser }) {
     setNovoSaldo("");
     setNovaSenha("");
     setMostrarSenha(false);
-    setTipoNovoDataNascimento("text");
   }
 
   function limparFormularioQRCode() {
     setQrNome("");
     setQrValor("");
-    setQrInicio("");
-    setQrFim("");
+    setQrDataInicio("");
+    setQrHoraInicio("");
+    setQrDataFim("");
+    setQrHoraFim("");
     setQrRaio("100");
     setQrLocais([]);
-    setTipoQrInicio("text");
-    setTipoQrFim("text");
   }
 
   function iniciarEdicao(user) {
     setUsuarioEmEdicao(user._id);
     setEditNome(user.nome || "");
-    setEditDataNascimento(user.data_nascimento || "");
+    setEditDataNascimento(converterIsoParaDataBR(user.data_nascimento || ""));
     setEditSexo(user.sexo || "");
     setEditIdade(user.idade || "");
     setEditCelular(user.celular || "");
@@ -695,7 +787,6 @@ function AdminDashboard({ setUser }) {
     setEditSenha("");
     setMostrarSenhaEdicao(false);
     setMostrarUsuarios(true);
-    setTipoEditDataNascimento(user.data_nascimento ? "date" : "text");
   }
 
   function cancelarEdicao() {
@@ -708,12 +799,21 @@ function AdminDashboard({ setUser }) {
     setEditEmail("");
     setEditSenha("");
     setMostrarSenhaEdicao(false);
-    setTipoEditDataNascimento("text");
   }
 
   async function criarUsuario() {
     if (!novoNome.trim()) {
       alert("Informe o nome do usuário");
+      return;
+    }
+
+    if (!novoDataNascimento.trim()) {
+      alert("Informe a data de nascimento");
+      return;
+    }
+
+    if (!validarDataBR(novoDataNascimento)) {
+      alert("Informe uma data de nascimento válida no formato DD/MM/AAAA");
       return;
     }
 
@@ -738,7 +838,7 @@ function AdminDashboard({ setUser }) {
 
       await api.post("/admin/users", {
         nome: novoNome.trim(),
-        data_nascimento: novoDataNascimento || "",
+        data_nascimento: converterDataBRParaISO(novoDataNascimento),
         sexo: novoSexo || "",
         idade: Number(novoIdade) || 0,
         celular: novoCelular.trim(),
@@ -765,6 +865,16 @@ function AdminDashboard({ setUser }) {
       return;
     }
 
+    if (!editDataNascimento.trim()) {
+      alert("Informe a data de nascimento");
+      return;
+    }
+
+    if (!validarDataBR(editDataNascimento)) {
+      alert("Informe uma data de nascimento válida no formato DD/MM/AAAA");
+      return;
+    }
+
     if (!editEmail.trim()) {
       alert("Informe o e-mail do usuário");
       return;
@@ -776,7 +886,7 @@ function AdminDashboard({ setUser }) {
 
       const payload = {
         nome: editNome.trim(),
-        data_nascimento: editDataNascimento || "",
+        data_nascimento: converterDataBRParaISO(editDataNascimento),
         sexo: editSexo || "",
         idade: Number(editIdade) || 0,
         celular: editCelular.trim(),
@@ -878,8 +988,31 @@ function AdminDashboard({ setUser }) {
       return;
     }
 
-    if (!qrInicio || !qrFim) {
-      alert("Informe a data/hora de início e fim");
+    if (!qrDataInicio || !qrHoraInicio || !qrDataFim || !qrHoraFim) {
+      alert("Informe a data e hora de início e fim");
+      return;
+    }
+
+    if (!validarDataBR(qrDataInicio) || !validarHora(qrHoraInicio)) {
+      alert("Informe uma data e hora de início válidas");
+      return;
+    }
+
+    if (!validarDataBR(qrDataFim) || !validarHora(qrHoraFim)) {
+      alert("Informe uma data e hora de fim válidas");
+      return;
+    }
+
+    const inicioISO = montarDataHoraISO(qrDataInicio, qrHoraInicio);
+    const fimISO = montarDataHoraISO(qrDataFim, qrHoraFim);
+
+    if (!inicioISO || !fimISO) {
+      alert("Não foi possível montar as datas do QR Code");
+      return;
+    }
+
+    if (new Date(inicioISO) >= new Date(fimISO)) {
+      alert("A data/hora final deve ser maior que a data/hora inicial");
       return;
     }
 
@@ -902,8 +1035,8 @@ function AdminDashboard({ setUser }) {
       await api.post("/admin/qrcodes", {
         nome: qrNome.trim(),
         valor: Number(qrValor),
-        inicio: new Date(qrInicio).toISOString(),
-        fim: new Date(qrFim).toISOString(),
+        inicio: inicioISO,
+        fim: fimISO,
         locais_permitidos: locaisPayload,
       });
 
@@ -975,15 +1108,13 @@ function AdminDashboard({ setUser }) {
 
               <input
                 className="input"
-                type={tipoNovoDataNascimento}
-                placeholder="Inserir data de nascimento"
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="Data de nascimento (DD/MM/AAAA)"
                 value={novoDataNascimento}
-                onFocus={() => setTipoNovoDataNascimento("date")}
-                onBlur={() => {
-                  if (!novoDataNascimento) setTipoNovoDataNascimento("text");
-                }}
                 onChange={(e) => {
-                  const data = e.target.value;
+                  const data = aplicarMascaraData(e.target.value);
                   setNovoDataNascimento(data);
                   setNovoIdade(calcularIdade(data));
                 }}
@@ -1102,7 +1233,7 @@ function AdminDashboard({ setUser }) {
             </div>
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
-              Use o modelo padrão com as colunas: nome, data_nascimento, email, 
+              Use o modelo padrão com as colunas: nome, data_nascimento, email,
               celular, sexo, senha, saldo_inicial.
             </p>
 
@@ -1111,12 +1242,12 @@ function AdminDashboard({ setUser }) {
                 <p style={{ color: "#fff" }}>
                   <strong>Resultado da importação</strong>
                 </p>
-            
+
                 <p style={{ color: "#9fb3c8" }}>
                   Total de linhas: {resultadoImportacao.total_linhas} | Importados:{" "}
                   {resultadoImportacao.importados} | Erros: {resultadoImportacao.erros}
                 </p>
-            
+
                 <div
                   style={{
                     maxHeight: 220,
@@ -1130,7 +1261,7 @@ function AdminDashboard({ setUser }) {
                       <div>
                         <strong>{item.motivo}</strong>
                       </div>
-            
+
                       <button
                         type="button"
                         className="action-btn"
@@ -1206,7 +1337,7 @@ function AdminDashboard({ setUser }) {
                           Sexo: {user.sexo || "-"} | Idade: {user.idade || 0}
                         </div>
                         <div className="extrato-data">
-                          Nascimento: {user.data_nascimento || "-"}
+                          Nascimento: {formatarDataExibicao(user.data_nascimento)}
                         </div>
                         <div className="extrato-data">
                           Saldo:{" "}
@@ -1254,17 +1385,13 @@ function AdminDashboard({ setUser }) {
 
                           <input
                             className="input"
-                            type={tipoEditDataNascimento}
-                            placeholder="Inserir data de nascimento"
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={10}
+                            placeholder="Data de nascimento (DD/MM/AAAA)"
                             value={editDataNascimento}
-                            onFocus={() => setTipoEditDataNascimento("date")}
-                            onBlur={() => {
-                              if (!editDataNascimento) {
-                                setTipoEditDataNascimento("text");
-                              }
-                            }}
                             onChange={(e) => {
-                              const data = e.target.value;
+                              const data = aplicarMascaraData(e.target.value);
                               setEditDataNascimento(data);
                               setEditIdade(calcularIdade(data));
                             }}
@@ -1595,26 +1722,50 @@ function AdminDashboard({ setUser }) {
 
               <input
                 className="input"
-                type={tipoQrInicio}
-                placeholder="Inserir data e hora de início"
-                value={qrInicio}
-                onFocus={() => setTipoQrInicio("datetime-local")}
-                onBlur={() => {
-                  if (!qrInicio) setTipoQrInicio("text");
-                }}
-                onChange={(e) => setQrInicio(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="Data de início (DD/MM/AAAA)"
+                value={qrDataInicio}
+                onChange={(e) =>
+                  setQrDataInicio(aplicarMascaraData(e.target.value))
+                }
               />
 
               <input
                 className="input"
-                type={tipoQrFim}
-                placeholder="Inserir data e hora de fim"
-                value={qrFim}
-                onFocus={() => setTipoQrFim("datetime-local")}
-                onBlur={() => {
-                  if (!qrFim) setTipoQrFim("text");
-                }}
-                onChange={(e) => setQrFim(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="Hora de início (HH:mm)"
+                value={qrHoraInicio}
+                onChange={(e) =>
+                  setQrHoraInicio(aplicarMascaraHora(e.target.value))
+                }
+              />
+
+              <input
+                className="input"
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="Data de fim (DD/MM/AAAA)"
+                value={qrDataFim}
+                onChange={(e) =>
+                  setQrDataFim(aplicarMascaraData(e.target.value))
+                }
+              />
+
+              <input
+                className="input"
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="Hora de fim (HH:mm)"
+                value={qrHoraFim}
+                onChange={(e) =>
+                  setQrHoraFim(aplicarMascaraHora(e.target.value))
+                }
               />
 
               <input

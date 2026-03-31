@@ -72,6 +72,15 @@ function Dashboard({ user, setUser }) {
   const [mostrarMensagens, setMostrarMensagens] = useState(false);
   const [mensagemPopup, setMensagemPopup] = useState(null);
   const [mostrarExtratoCompleto, setMostrarExtratoCompleto] = useState(false);
+  const [nomesNiveis, setNomesNiveis] = useState([
+    "Nível 1",
+    "Pro",
+    "Elite",
+    "Legend",
+    "Master",
+    "Supreme",
+    "Omega",
+  ]);
 
   const inputFotoRef = useRef(null);
 
@@ -87,12 +96,14 @@ function Dashboard({ user, setUser }) {
         rankingResponse,
         mensagensResponse,
         popupResponse,
+        layoutResponse,
       ] = await Promise.all([
         api.get("/auth/me"),
         api.get("/user/extrato"),
         api.get("/user/ranking"),
         api.get("/user/messages"),
         api.get("/user/messages/popup"),
+        api.get("/layout/public"),
       ]);
 
       setDadosUsuario(usuarioResponse.data);
@@ -101,6 +112,12 @@ function Dashboard({ user, setUser }) {
       setRanking(rankingResponse.data?.ranking || []);
       setMensagens(mensagensResponse.data);
       setMensagemPopup(popupResponse.data);
+      setNomesNiveis(
+        Array.isArray(layoutResponse.data?.level_names) &&
+          layoutResponse.data.level_names.length === 7
+          ? layoutResponse.data.level_names
+          : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
+      );
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
     } finally {
@@ -264,17 +281,12 @@ function Dashboard({ user, setUser }) {
 
   function getNivelPorSaldo(saldo) {
     const saldoAtual = Number(saldo || 0);
-
-    const niveis = [
-      "Nível 1",
-      "Pro",
-      "Elite",
-      "Legend",
-      "Master",
-      "Supreme",
-      "Omega",
-    ];
-
+  
+    const niveis =
+      Array.isArray(nomesNiveis) && nomesNiveis.length === 7
+        ? nomesNiveis
+        : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
+  
     const indice = Math.floor(saldoAtual / 500);
     return niveis[indice] || `Nível ${indice + 1}`;
   }

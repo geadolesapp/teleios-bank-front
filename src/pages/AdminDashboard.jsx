@@ -341,15 +341,17 @@ function AdminDashboard({ setUser }) {
   const [layoutFonte, setLayoutFonte] = useState("Inter");
   const [layoutMostrarNuvens, setLayoutMostrarNuvens] = useState(true);
   const [layoutLogoArquivo, setLayoutLogoArquivo] = useState(null);
+  const [layoutCoinLogoArquivo, setLayoutCoinLogoArquivo] = useState(null);
+  const [layoutCoinsPorNivel, setLayoutCoinsPorNivel] = useState("500");
   const [layoutNomesNiveis, setLayoutNomesNiveis] = useState([
-      "Nível 1",
-      "Pro",
-      "Elite",
-      "Legend",
-      "Master",
-      "Supreme",
-      "Omega",
-    ]);
+    "Nível 1",
+    "Pro",
+    "Elite",
+    "Legend",
+    "Master",
+    "Supreme",
+    "Omega",
+  ]);
   const [salvandoLayout, setSalvandoLayout] = useState(false);
 
   const [mensagensAdmin, setMensagensAdmin] = useState([]);
@@ -619,6 +621,7 @@ function AdminDashboard({ setUser }) {
       setLayoutCorDestaque(config.accent_color || "#6ecbff");
       setLayoutFonte(config.font_family || "Inter");
       setLayoutMostrarNuvens(!!config.show_clouds);
+      setLayoutCoinsPorNivel(String(config.coins_per_level || 500));
       setLayoutNomesNiveis(
         Array.isArray(config.level_names) && config.level_names.length === 7
           ? config.level_names
@@ -640,20 +643,34 @@ function AdminDashboard({ setUser }) {
         accent_color: layoutCorDestaque,
         font_family: layoutFonte,
         show_clouds: layoutMostrarNuvens,
+        coins_per_level: Number(layoutCoinsPorNivel) || 500,
         level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
 
       if (layoutLogoArquivo) {
         const formData = new FormData();
         formData.append("logo", layoutLogoArquivo);
-
+      
         await api.post("/layout/logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-
+      
         setLayoutLogoArquivo(null);
+      }
+      
+      if (layoutCoinLogoArquivo) {
+        const formData = new FormData();
+        formData.append("coin_logo", layoutCoinLogoArquivo);
+      
+        await api.post("/layout/coin-logo", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      
+        setLayoutCoinLogoArquivo(null);
       }
 
       alert("Layout atualizado com sucesso");
@@ -1715,25 +1732,26 @@ function AdminDashboard({ setUser }) {
                 </select>
               </div>
 
-              <div className="layout-toggle">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={layoutMostrarNuvens}
-                    onChange={(e) => setLayoutMostrarNuvens(e.target.checked)}
-                  />
-                  Mostrar nuvens no fundo
-                </label>
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Moedas por nível</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  placeholder="Quantidade de moedas por nível"
+                  value={layoutCoinsPorNivel}
+                  onChange={(e) => setLayoutCoinsPorNivel(e.target.value)}
+                />
               </div>
 
               <div style={{ width: "100%" }}>
-                <label className="color-label">Logo</label>
+                <label className="color-label">Logo da moeda</label>
                 <input
                   className="input"
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   onChange={(e) =>
-                    setLayoutLogoArquivo(e.target.files?.[0] || null)
+                    setLayoutCoinLogoArquivo(e.target.files?.[0] || null)
                   }
                 />
               </div>

@@ -371,6 +371,16 @@ function AdminDashboard({ setUser }) {
     "Roboto",
     "Montserrat",
     "Nunito",
+    "Open Sans",
+    "Lato",
+    "Oswald",
+    "Raleway",
+    "Merriweather",
+    "Playfair Display",
+    "Bebas Neue",
+    "Ubuntu",
+    "Fira Sans",
+    "Quicksand",
   ];
 
   useEffect(() => {

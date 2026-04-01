@@ -322,9 +322,21 @@ function Dashboard({ user, setUser }) {
     return `${partes[0]} ${partes[partes.length - 1]}`;
   }
 
-  function obterUrlLogoMoeda(foto) {
+  function obterUrlAvatar(foto) {
   if (!foto) {
-    return `${process.env.PUBLIC_URL}/moedaTeleios.png`;
+    return "https://i.pravatar.cc/100";
+  }
+
+  if (/^https?:\/\//i.test(foto)) {
+    return foto;
+  }
+
+  return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
+}
+
+function obterUrlLogoMoeda(foto) {
+  if (!foto) {
+    return moedaTeleios;
   }
 
   if (/^https?:\/\//i.test(foto)) {

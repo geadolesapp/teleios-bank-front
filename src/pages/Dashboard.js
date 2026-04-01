@@ -4,7 +4,7 @@ import Cropper from "react-easy-crop";
 import api from "../services/api";
 import QRCodeScanner from "./QRCodeScanner";
 import Footer from "../components/Footer";
-import moedaTeleios from "../assets/moedaTeleios.png";
+import moedaTeleios from "../assets/moedaTeleios.png"; // logo da moeda agora virá do layout público
 
 function createImage(url) {
   return new Promise((resolve, reject) => {
@@ -81,6 +81,8 @@ function Dashboard({ user, setUser }) {
     "Supreme",
     "Omega",
   ]);
+  const [coinsPerLevel, setCoinsPerLevel] = useState(500);
+  const [coinLogoUrl, setCoinLogoUrl] = useState("");
 
   const inputFotoRef = useRef(null);
 
@@ -118,6 +120,8 @@ function Dashboard({ user, setUser }) {
           ? layoutResponse.data.level_names
           : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
       );
+      setCoinsPerLevel(Number(layoutResponse.data?.coins_per_level) || 500);
+      setCoinLogoUrl(layoutResponse.data?.coin_logo_url || "");
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
     } finally {
@@ -287,25 +291,28 @@ function Dashboard({ user, setUser }) {
         ? nomesNiveis
         : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
   
-    const indice = Math.floor(saldoAtual / 500);
+    const divisor = Number(coinsPerLevel) > 0 ? Number(coinsPerLevel) : 500;
+    const indice = Math.floor(saldoAtual / divisor);
     return niveis[indice] || `Nível ${indice + 1}`;
   }
 
   function getProgressoNivel(saldo) {
     const saldoAtual = Number(saldo || 0);
-    const resto = saldoAtual % 500;
-    return (resto / 500) * 100;
+    const divisor = Number(coinsPerLevel) > 0 ? Number(coinsPerLevel) : 500;
+    const resto = saldoAtual % divisor;
+    return (resto / divisor) * 100;
   }
 
   function getCoinsParaProximoNivel(saldo) {
     const saldoAtual = Number(saldo || 0);
-    const resto = saldoAtual % 500;
-
+    const divisor = Number(coinsPerLevel) > 0 ? Number(coinsPerLevel) : 500;
+    const resto = saldoAtual % divisor;
+  
     if (resto === 0 && saldoAtual !== 0) {
-      return 500;
+      return divisor;
     }
-
-    return 500 - resto;
+  
+    return divisor - resto;
   }
 
   function formatarNomeRanking(nome) {
@@ -315,17 +322,17 @@ function Dashboard({ user, setUser }) {
     return `${partes[0]} ${partes[partes.length - 1]}`;
   }
 
-  function obterUrlAvatar(foto) {
-    if (!foto) {
-      return "https://i.pravatar.cc/100";
-    }
-
-    if (/^https?:\/\//i.test(foto)) {
-      return foto;
-    }
-
-    return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
+  function obterUrlLogoMoeda(foto) {
+  if (!foto) {
+    return `${process.env.PUBLIC_URL}/moedaTeleios.png`;
   }
+
+  if (/^https?:\/\//i.test(foto)) {
+    return foto;
+  }
+
+  return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
+}
 
   const notificacoesNaoLidas = mensagens.filter((m) => !m.lida).length;
   const saldoAtual = Number(dadosUsuario?.saldo || 0);
@@ -495,8 +502,8 @@ function Dashboard({ user, setUser }) {
           <div className="dashboard-content">
             <div className="balance-card teleios-balance-card">
               <img
-                src={moedaTeleios}
-                alt="Moeda Teleios"
+                src={obterUrlLogoMoeda(coinLogoUrl)}
+                alt="Moeda"
                 className="teleios-coin-logo"
               />
 

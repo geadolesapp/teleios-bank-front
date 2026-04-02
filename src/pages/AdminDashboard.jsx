@@ -378,16 +378,6 @@ function AdminDashboard({ setUser }) {
   const [carregandoRankingsAdmin, setCarregandoRankingsAdmin] =
     useState(true);
 
-  const [carregandoRelatorios, setCarregandoRelatorios] = useState(true);
-  const [relatorioUsuarios, setRelatorioUsuarios] = useState(null);
-  const [relatorioRankings, setRelatorioRankings] = useState({
-    next: [],
-    ge: [],
-    lideres: [],
-  });
-  const [relatorioExtrato, setRelatorioExtrato] = useState(null);
-  const [relatorioQRCodes, setRelatorioQRCodes] = useState(null);
-
   const fontesPermitidas = [
     "Inter",
     "Poppins",
@@ -412,7 +402,6 @@ function AdminDashboard({ setUser }) {
     carregarLayout();
     carregarMensagensAdmin();
     carregarRankingsAdmin();
-    carregarRelatorios();
   }, []);
 
   function aplicarMascaraData(valor) {
@@ -597,13 +586,161 @@ function AdminDashboard({ setUser }) {
     return "Grupo não identificado";
   }
 
-  function formatarMoedas(valor) {
-    return Number(valor || 0).toLocaleString("pt-BR");
+  function escaparCSV(valor) {
+    const texto = String(valor ?? "");
+    return `"${texto.replace(/"/g, '""')}"`;
   }
 
-  function formatarDataHora(valor) {
-    if (!valor) return "-";
-    return new Date(valor).toLocaleString("pt-BR");
+  function baixarArquivoCSV(nomeArquivo, linhas) {
+    const conteudo = linhas.map((linha) => linha.join(";")).join("\n");
+    const blob = new Blob([conteudo], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = nomeArquivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function baixarRelatorioUsuariosCSV() {
+    try {
+      const response = await api.get("/admin/reports/users");
+      const dados = response.data || {};
+
+      const linhas = [
+        ["campo", "valor"],
+        ["total_usuarios", dados.total_usuarios ?? 0],
+        ["total_usuarios_ativos", dados.total_usuarios_ativos ?? 0],
+        ["total_lideres", dados.total_lideres ?? 0],
+        ["total_next", dados.total_next ?? 0],
+        ["total_ge", dados.total_ge ?? 0],
+        ["total_fora_faixa", dados.total_fora_faixa ?? 0],
+      ];
+
+      baixarArquivoCSV("relatorio_usuarios.csv", linhas);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao gerar relatório de usuários";
+      alert(mensagem);
+    }
+  }
+
+  async function baixarRelatorioRankingsCSV() {
+    try {
+      const response = await api.get("/admin/reports/rankings");
+      const dados = response.data || {};
+
+      const linhas = [
+        ["grupo", "posicao", "nome", "saldo", "idade", "data_nascimento", "lider"],
+      ];
+
+      const adicionarGrupo = (grupoNome, lista = []) => {
+        lista.forEach((item, index) => {
+          linhas.push([
+            escaparCSV(grupoNome),
+            index + 1,
+            escaparCSV(item.nome || ""),
+            Number(item.saldo || 0),
+            Number(item.idade || 0),
+            escaparCSV(item.data_nascimento || ""),
+            item.is_lider ? "Sim" : "Não",
+          ]);
+        });
+      };
+
+      adicionarGrupo("Next", dados.next || []);
+      adicionarGrupo("GE", dados.ge || []);
+      adicionarGrupo("Lideres", dados.lideres || []);
+
+      baixarArquivoCSV("relatorio_rankings.csv", linhas);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao gerar relatório de rankings";
+      alert(mensagem);
+    }
+  }
+
+  async function baixarRelatorioExtratoCSV() {
+    try {
+      const response = await api.get("/admin/reports/extrato");
+      const dados = response.data || {};
+
+      const linhas = [
+        [
+          "usuario",
+          "email",
+          "tipo",
+          "valor",
+          "descricao",
+          "origem",
+          "data",
+        ],
+      ];
+
+      (dados.transacoes || []).forEach((item) => {
+        linhas.push([
+          escaparCSV(item.user_id?.nome || ""),
+          escaparCSV(item.user_id?.email || ""),
+          escaparCSV(item.tipo || ""),
+          Number(item.valor || 0),
+          escaparCSV(item.descricao || ""),
+          escaparCSV(item.origem || ""),
+          escaparCSV(item.createdAt || ""),
+        ]);
+      });
+
+      baixarArquivoCSV("relatorio_extrato.csv", linhas);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao gerar relatório de extrato";
+      alert(mensagem);
+    }
+  }
+
+  async function baixarRelatorioQRCodesCSV() {
+    try {
+      const response = await api.get("/admin/reports/qrcodes");
+      const dados = response.data || {};
+
+      const linhas = [
+        [
+          "nome",
+          "codigo",
+          "valor",
+          "ativo",
+          "inicio",
+          "fim",
+          "total_resgates",
+          "quantidade_locais",
+          "data_criacao",
+        ],
+      ];
+
+      (dados.campanhas || []).forEach((item) => {
+        linhas.push([
+          escaparCSV(item.nome || ""),
+          escaparCSV(item.codigo || ""),
+          Number(item.valor || 0),
+          item.ativo ? "Sim" : "Não",
+          escaparCSV(item.inicio || ""),
+          escaparCSV(item.fim || ""),
+          Number(item.total_resgates || 0),
+          Number(item.locais_permitidos?.length || 0),
+          escaparCSV(item.createdAt || ""),
+        ]);
+      });
+
+      baixarArquivoCSV("relatorio_qrcodes.csv", linhas);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao gerar relatório de QR Codes";
+      alert(mensagem);
+    }
   }
 
   async function carregarUsuarios() {
@@ -638,39 +775,6 @@ function AdminDashboard({ setUser }) {
       setRankingLideres([]);
     } finally {
       setCarregandoRankingsAdmin(false);
-    }
-  }
-
-  async function carregarRelatorios() {
-    try {
-      setCarregandoRelatorios(true);
-
-      const [usersResponse, rankingsResponse, extratoResponse, qrcodesResponse] =
-        await Promise.all([
-          api.get("/admin/reports/users"),
-          api.get("/admin/reports/rankings"),
-          api.get("/admin/reports/extrato"),
-          api.get("/admin/reports/qrcodes"),
-        ]);
-
-      setRelatorioUsuarios(usersResponse.data || null);
-      setRelatorioRankings(
-        rankingsResponse.data || {
-          next: [],
-          ge: [],
-          lideres: [],
-        },
-      );
-      setRelatorioExtrato(extratoResponse.data || null);
-      setRelatorioQRCodes(qrcodesResponse.data || null);
-    } catch (error) {
-      console.error("Erro ao carregar relatórios:", error);
-      setRelatorioUsuarios(null);
-      setRelatorioRankings({ next: [], ge: [], lideres: [] });
-      setRelatorioExtrato(null);
-      setRelatorioQRCodes(null);
-    } finally {
-      setCarregandoRelatorios(false);
     }
   }
 
@@ -834,7 +938,6 @@ function AdminDashboard({ setUser }) {
       setArquivoImportacao(null);
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem =
@@ -946,7 +1049,6 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
 
       alert(
         response.data?.message ||
@@ -973,8 +1075,6 @@ function AdminDashboard({ setUser }) {
       setProcessandoResetExtrato(true);
 
       const response = await api.delete("/admin/users/reset-extrato");
-
-      await carregarRelatorios();
 
       alert(
         response.data?.message ||
@@ -1019,7 +1119,6 @@ function AdminDashboard({ setUser }) {
       await carregarQRCodes();
       await carregarMensagensAdmin();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
 
       setBuscaUsuario("");
       cancelarEdicao();
@@ -1155,7 +1254,6 @@ function AdminDashboard({ setUser }) {
       limparFormularioCriacao();
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao criar usuário";
@@ -1209,7 +1307,6 @@ function AdminDashboard({ setUser }) {
       cancelarEdicao();
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao editar usuário";
@@ -1233,7 +1330,6 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao excluir usuário";
@@ -1271,7 +1367,6 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
-      await carregarRelatorios();
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao alterar saldo";
       setErro(mensagem);
@@ -1352,7 +1447,6 @@ function AdminDashboard({ setUser }) {
 
       limparFormularioQRCode();
       await carregarQRCodes();
-      await carregarRelatorios();
       alert("QR Code criado com sucesso");
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao criar QR Code";
@@ -1369,7 +1463,6 @@ function AdminDashboard({ setUser }) {
     try {
       await api.delete(`/admin/qrcodes/${id}`);
       await carregarQRCodes();
-      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao excluir QR Code";
@@ -1390,38 +1483,6 @@ function AdminDashboard({ setUser }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-  }
-
-  function renderListaRanking(lista) {
-    if (!lista || lista.length === 0) {
-      return <p style={{ color: "#ccc" }}>Nenhum usuário encontrado.</p>;
-    }
-
-    return lista.map((item, index) => {
-      const info = getRankingInfo(index);
-      const nivelRanking = getNivelPorSaldo(item.saldo);
-
-      return (
-        <div className={info.classe} key={item._id}>
-          <div className="ranking-esquerda">
-            <span className="ranking-medalha">{info.medalha}</span>
-
-            <div className="ranking-textos">
-              <strong>
-                {info.posicao} {formatarNomeRanking(item.nome)}
-              </strong>
-            </div>
-          </div>
-
-          <div className="ranking-direita">
-            <div className="ranking-nivel">{nivelRanking}</div>
-            <div className="ranking-saldo">
-              {formatarMoedas(item.saldo)} Coins
-            </div>
-          </div>
-        </div>
-      );
-    });
   }
 
   return (
@@ -1702,7 +1763,9 @@ function AdminDashboard({ setUser }) {
                           Nascimento: {formatarDataExibicao(user.data_nascimento)}
                         </div>
                         <div className="extrato-data">
-                          Saldo: {formatarMoedas(user.saldo)} Coins
+                          Saldo:{" "}
+                          {Number(user.saldo || 0).toLocaleString("pt-BR")}{" "}
+                          Coins
                         </div>
                         <div className="extrato-data">
                           Líder: {user.is_lider ? "Sim" : "Não"}
@@ -1849,9 +1912,7 @@ function AdminDashboard({ setUser }) {
                               <input
                                 type="checkbox"
                                 checked={editIsLider}
-                                onChange={(e) =>
-                                  setEditIsLider(e.target.checked)
-                                }
+                                onChange={(e) => setEditIsLider(e.target.checked)}
                               />
                               Usuário é líder
                             </label>
@@ -2158,250 +2219,47 @@ function AdminDashboard({ setUser }) {
 
           <SectionCard
             title="Relatórios"
-            subtitle="Resumo geral do sistema"
+            subtitle="Exportação de arquivos CSV"
             open={mostrarRelatorios}
             onToggle={() => setMostrarRelatorios(!mostrarRelatorios)}
-            rightContent={
+          >
+            <div className="actions">
               <button
                 type="button"
-                className="action-btn secondary section-inline-btn"
-                onClick={carregarRelatorios}
+                className="action-btn"
+                onClick={baixarRelatorioUsuariosCSV}
               >
-                Atualizar
+                Baixar relatório de usuários
               </button>
-            }
-          >
-            {carregandoRelatorios ? (
-              <p style={{ color: "#ccc" }}>Carregando relatórios...</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                <div>
-                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
-                    Resumo de usuários
-                  </h4>
 
-                  <div className="actions">
-                    <div className="main-card admin-inner-card">
-                      <strong>Total de usuários</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_usuarios ?? 0}
-                      </div>
-                    </div>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={baixarRelatorioRankingsCSV}
+              >
+                Baixar relatório de rankings
+              </button>
 
-                    <div className="main-card admin-inner-card">
-                      <strong>Usuários ativos</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_usuarios_ativos ?? 0}
-                      </div>
-                    </div>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={baixarRelatorioExtratoCSV}
+              >
+                Baixar relatório de extrato
+              </button>
 
-                    <div className="main-card admin-inner-card">
-                      <strong>Líderes</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_lideres ?? 0}
-                      </div>
-                    </div>
+              <button
+                type="button"
+                className="action-btn"
+                onClick={baixarRelatorioQRCodesCSV}
+              >
+                Baixar relatório de QR Codes
+              </button>
+            </div>
 
-                    <div className="main-card admin-inner-card">
-                      <strong>Next</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_next ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>GE</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_ge ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Fora de faixa</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioUsuarios?.total_fora_faixa ?? 0}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
-                    Relatório de rankings
-                  </h4>
-
-                  <div style={{ marginBottom: 18 }}>
-                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
-                      Ranking Next
-                    </h5>
-                    {renderListaRanking(relatorioRankings?.next || [])}
-                  </div>
-
-                  <div style={{ marginBottom: 18 }}>
-                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
-                      Ranking GE
-                    </h5>
-                    {renderListaRanking(relatorioRankings?.ge || [])}
-                  </div>
-
-                  <div>
-                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
-                      Ranking Líderes
-                    </h5>
-                    {renderListaRanking(relatorioRankings?.lideres || [])}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
-                    Relatório de extrato
-                  </h4>
-
-                  <div className="actions">
-                    <div className="main-card admin-inner-card">
-                      <strong>Total de transações</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioExtrato?.total_transacoes ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Total de entradas</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {formatarMoedas(relatorioExtrato?.total_entradas)} Coins
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Total de saídas</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {formatarMoedas(relatorioExtrato?.total_saidas)} Coins
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Saldo líquido movimentado</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {formatarMoedas(
-                          relatorioExtrato?.saldo_liquido_movimentado,
-                        )}{" "}
-                        Coins
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: 16 }}>
-                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
-                      Últimas transações
-                    </h5>
-
-                    {!relatorioExtrato?.transacoes?.length ? (
-                      <p style={{ color: "#ccc" }}>
-                        Nenhuma transação encontrada.
-                      </p>
-                    ) : (
-                      relatorioExtrato.transacoes.slice(0, 10).map((item) => (
-                        <div className="extrato-item" key={item._id}>
-                          <div>
-                            <strong>{item.descricao}</strong>
-                            <div className="extrato-data">
-                              Usuário: {item.user_id?.nome || "Não identificado"}
-                            </div>
-                            <div className="extrato-data">
-                              {formatarDataHora(item.createdAt)}
-                            </div>
-                          </div>
-
-                          <div
-                            className={
-                              item.tipo === "entrada"
-                                ? "valor-entrada"
-                                : "valor-saida"
-                            }
-                          >
-                            {item.tipo === "entrada" ? "+" : "-"}{" "}
-                            {formatarMoedas(item.valor)} Coins
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
-                    Relatório de QR Codes
-                  </h4>
-
-                  <div className="actions">
-                    <div className="main-card admin-inner-card">
-                      <strong>Total de QR Codes</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioQRCodes?.total_qrcodes ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Campanhas ativas</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioQRCodes?.total_ativos ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="main-card admin-inner-card">
-                      <strong>Campanhas expiradas</strong>
-                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
-                        {relatorioQRCodes?.total_expirados ?? 0}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: 16 }}>
-                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
-                      Campanhas
-                    </h5>
-
-                    {!relatorioQRCodes?.campanhas?.length ? (
-                      <p style={{ color: "#ccc" }}>
-                        Nenhuma campanha encontrada.
-                      </p>
-                    ) : (
-                      relatorioQRCodes.campanhas.map((item) => (
-                        <div className="extrato-item" key={item._id}>
-                          <div>
-                            <strong>{item.nome}</strong>
-                            <div className="extrato-data">
-                              Código: {item.codigo}
-                            </div>
-                            <div className="extrato-data">
-                              Valor: {formatarMoedas(item.valor)} Coins
-                            </div>
-                            <div className="extrato-data">
-                              Início: {formatarDataHora(item.inicio)}
-                            </div>
-                            <div className="extrato-data">
-                              Fim: {formatarDataHora(item.fim)}
-                            </div>
-                          </div>
-
-                          <div style={{ textAlign: "right" }}>
-                            <div className="extrato-data">
-                              Resgates: {item.total_resgates ?? 0}
-                            </div>
-                            <div className="extrato-data">
-                              Locais: {item.locais_permitidos?.length || 0}
-                            </div>
-                            <div className="extrato-data">
-                              Status: {item.ativo ? "Ativo" : "Inativo"}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+            <p style={{ color: "#9fb3c8", marginTop: 14, lineHeight: 1.6 }}>
+              Os relatórios são gerados em formato CSV para download.
+            </p>
           </SectionCard>
 
           <SectionCard

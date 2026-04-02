@@ -327,6 +327,7 @@ function AdminDashboard({ setUser }) {
   const [mostrarImportacao, setMostrarImportacao] = useState(false);
   const [mostrarLayout, setMostrarLayout] = useState(false);
   const [mostrarResetAdmin, setMostrarResetAdmin] = useState(false);
+  const [mostrarRelatorios, setMostrarRelatorios] = useState(false);
   const [mostrarGerarQR, setMostrarGerarQR] = useState(false);
   const [mostrarQRCodesGerados, setMostrarQRCodesGerados] = useState(false);
   const [mostrarMensagensAdmin, setMostrarMensagensAdmin] = useState(false);
@@ -377,6 +378,16 @@ function AdminDashboard({ setUser }) {
   const [carregandoRankingsAdmin, setCarregandoRankingsAdmin] =
     useState(true);
 
+  const [carregandoRelatorios, setCarregandoRelatorios] = useState(true);
+  const [relatorioUsuarios, setRelatorioUsuarios] = useState(null);
+  const [relatorioRankings, setRelatorioRankings] = useState({
+    next: [],
+    ge: [],
+    lideres: [],
+  });
+  const [relatorioExtrato, setRelatorioExtrato] = useState(null);
+  const [relatorioQRCodes, setRelatorioQRCodes] = useState(null);
+
   const fontesPermitidas = [
     "Inter",
     "Poppins",
@@ -401,6 +412,7 @@ function AdminDashboard({ setUser }) {
     carregarLayout();
     carregarMensagensAdmin();
     carregarRankingsAdmin();
+    carregarRelatorios();
   }, []);
 
   function aplicarMascaraData(valor) {
@@ -585,6 +597,15 @@ function AdminDashboard({ setUser }) {
     return "Grupo não identificado";
   }
 
+  function formatarMoedas(valor) {
+    return Number(valor || 0).toLocaleString("pt-BR");
+  }
+
+  function formatarDataHora(valor) {
+    if (!valor) return "-";
+    return new Date(valor).toLocaleString("pt-BR");
+  }
+
   async function carregarUsuarios() {
     try {
       setErro("");
@@ -620,23 +641,56 @@ function AdminDashboard({ setUser }) {
     }
   }
 
+  async function carregarRelatorios() {
+    try {
+      setCarregandoRelatorios(true);
+
+      const [usersResponse, rankingsResponse, extratoResponse, qrcodesResponse] =
+        await Promise.all([
+          api.get("/admin/reports/users"),
+          api.get("/admin/reports/rankings"),
+          api.get("/admin/reports/extrato"),
+          api.get("/admin/reports/qrcodes"),
+        ]);
+
+      setRelatorioUsuarios(usersResponse.data || null);
+      setRelatorioRankings(
+        rankingsResponse.data || {
+          next: [],
+          ge: [],
+          lideres: [],
+        },
+      );
+      setRelatorioExtrato(extratoResponse.data || null);
+      setRelatorioQRCodes(qrcodesResponse.data || null);
+    } catch (error) {
+      console.error("Erro ao carregar relatórios:", error);
+      setRelatorioUsuarios(null);
+      setRelatorioRankings({ next: [], ge: [], lideres: [] });
+      setRelatorioExtrato(null);
+      setRelatorioQRCodes(null);
+    } finally {
+      setCarregandoRelatorios(false);
+    }
+  }
+
   function baixarModeloUsuarios() {
     const conteudo =
-      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial;lider\n";
-  
+      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial;Lider\n";
+
     const blob = new Blob([conteudo], {
       type: "text/csv;charset=utf-8;",
     });
-  
+
     const url = window.URL.createObjectURL(blob);
-  
+
     const link = document.createElement("a");
     link.href = url;
     link.download = "modelo_usuarios.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  
+
     window.URL.revokeObjectURL(url);
   }
 
@@ -780,6 +834,7 @@ function AdminDashboard({ setUser }) {
       setArquivoImportacao(null);
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem =
@@ -891,6 +946,7 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
 
       alert(
         response.data?.message ||
@@ -917,6 +973,8 @@ function AdminDashboard({ setUser }) {
       setProcessandoResetExtrato(true);
 
       const response = await api.delete("/admin/users/reset-extrato");
+
+      await carregarRelatorios();
 
       alert(
         response.data?.message ||
@@ -961,6 +1019,7 @@ function AdminDashboard({ setUser }) {
       await carregarQRCodes();
       await carregarMensagensAdmin();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
 
       setBuscaUsuario("");
       cancelarEdicao();
@@ -1096,6 +1155,7 @@ function AdminDashboard({ setUser }) {
       limparFormularioCriacao();
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
       setMostrarUsuarios(true);
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao criar usuário";
@@ -1149,6 +1209,7 @@ function AdminDashboard({ setUser }) {
       cancelarEdicao();
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao editar usuário";
@@ -1172,6 +1233,7 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao excluir usuário";
@@ -1209,6 +1271,7 @@ function AdminDashboard({ setUser }) {
 
       await carregarUsuarios();
       await carregarRankingsAdmin();
+      await carregarRelatorios();
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao alterar saldo";
       setErro(mensagem);
@@ -1289,6 +1352,7 @@ function AdminDashboard({ setUser }) {
 
       limparFormularioQRCode();
       await carregarQRCodes();
+      await carregarRelatorios();
       alert("QR Code criado com sucesso");
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao criar QR Code";
@@ -1305,6 +1369,7 @@ function AdminDashboard({ setUser }) {
     try {
       await api.delete(`/admin/qrcodes/${id}`);
       await carregarQRCodes();
+      await carregarRelatorios();
     } catch (error) {
       const mensagem =
         error.response?.data?.message || "Erro ao excluir QR Code";
@@ -1325,6 +1390,38 @@ function AdminDashboard({ setUser }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+  }
+
+  function renderListaRanking(lista) {
+    if (!lista || lista.length === 0) {
+      return <p style={{ color: "#ccc" }}>Nenhum usuário encontrado.</p>;
+    }
+
+    return lista.map((item, index) => {
+      const info = getRankingInfo(index);
+      const nivelRanking = getNivelPorSaldo(item.saldo);
+
+      return (
+        <div className={info.classe} key={item._id}>
+          <div className="ranking-esquerda">
+            <span className="ranking-medalha">{info.medalha}</span>
+
+            <div className="ranking-textos">
+              <strong>
+                {info.posicao} {formatarNomeRanking(item.nome)}
+              </strong>
+            </div>
+          </div>
+
+          <div className="ranking-direita">
+            <div className="ranking-nivel">{nivelRanking}</div>
+            <div className="ranking-saldo">
+              {formatarMoedas(item.saldo)} Coins
+            </div>
+          </div>
+        </div>
+      );
+    });
   }
 
   return (
@@ -1498,7 +1595,7 @@ function AdminDashboard({ setUser }) {
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
               Use o modelo padrão com as colunas: nome, data_nascimento, email,
-              celular, sexo, senha, saldo_inicial, lider.
+              celular, sexo, senha, saldo_inicial, Lider.
             </p>
 
             {resultadoImportacao && (
@@ -1605,9 +1702,7 @@ function AdminDashboard({ setUser }) {
                           Nascimento: {formatarDataExibicao(user.data_nascimento)}
                         </div>
                         <div className="extrato-data">
-                          Saldo:{" "}
-                          {Number(user.saldo || 0).toLocaleString("pt-BR")}{" "}
-                          Coins
+                          Saldo: {formatarMoedas(user.saldo)} Coins
                         </div>
                         <div className="extrato-data">
                           Líder: {user.is_lider ? "Sim" : "Não"}
@@ -1754,7 +1849,9 @@ function AdminDashboard({ setUser }) {
                               <input
                                 type="checkbox"
                                 checked={editIsLider}
-                                onChange={(e) => setEditIsLider(e.target.checked)}
+                                onChange={(e) =>
+                                  setEditIsLider(e.target.checked)
+                                }
                               />
                               Usuário é líder
                             </label>
@@ -2057,6 +2154,254 @@ function AdminDashboard({ setUser }) {
               mensagens do admin. O layout é mantido e o usuário
               admin@teleios.com é preservado.
             </p>
+          </SectionCard>
+
+          <SectionCard
+            title="Relatórios"
+            subtitle="Resumo geral do sistema"
+            open={mostrarRelatorios}
+            onToggle={() => setMostrarRelatorios(!mostrarRelatorios)}
+            rightContent={
+              <button
+                type="button"
+                className="action-btn secondary section-inline-btn"
+                onClick={carregarRelatorios}
+              >
+                Atualizar
+              </button>
+            }
+          >
+            {carregandoRelatorios ? (
+              <p style={{ color: "#ccc" }}>Carregando relatórios...</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <div>
+                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
+                    Resumo de usuários
+                  </h4>
+
+                  <div className="actions">
+                    <div className="main-card admin-inner-card">
+                      <strong>Total de usuários</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_usuarios ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Usuários ativos</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_usuarios_ativos ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Líderes</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_lideres ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Next</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_next ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>GE</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_ge ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Fora de faixa</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioUsuarios?.total_fora_faixa ?? 0}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
+                    Relatório de rankings
+                  </h4>
+
+                  <div style={{ marginBottom: 18 }}>
+                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
+                      Ranking Next
+                    </h5>
+                    {renderListaRanking(relatorioRankings?.next || [])}
+                  </div>
+
+                  <div style={{ marginBottom: 18 }}>
+                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
+                      Ranking GE
+                    </h5>
+                    {renderListaRanking(relatorioRankings?.ge || [])}
+                  </div>
+
+                  <div>
+                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
+                      Ranking Líderes
+                    </h5>
+                    {renderListaRanking(relatorioRankings?.lideres || [])}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
+                    Relatório de extrato
+                  </h4>
+
+                  <div className="actions">
+                    <div className="main-card admin-inner-card">
+                      <strong>Total de transações</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioExtrato?.total_transacoes ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Total de entradas</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {formatarMoedas(relatorioExtrato?.total_entradas)} Coins
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Total de saídas</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {formatarMoedas(relatorioExtrato?.total_saidas)} Coins
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Saldo líquido movimentado</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {formatarMoedas(
+                          relatorioExtrato?.saldo_liquido_movimentado,
+                        )}{" "}
+                        Coins
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 16 }}>
+                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
+                      Últimas transações
+                    </h5>
+
+                    {!relatorioExtrato?.transacoes?.length ? (
+                      <p style={{ color: "#ccc" }}>
+                        Nenhuma transação encontrada.
+                      </p>
+                    ) : (
+                      relatorioExtrato.transacoes.slice(0, 10).map((item) => (
+                        <div className="extrato-item" key={item._id}>
+                          <div>
+                            <strong>{item.descricao}</strong>
+                            <div className="extrato-data">
+                              Usuário: {item.user_id?.nome || "Não identificado"}
+                            </div>
+                            <div className="extrato-data">
+                              {formatarDataHora(item.createdAt)}
+                            </div>
+                          </div>
+
+                          <div
+                            className={
+                              item.tipo === "entrada"
+                                ? "valor-entrada"
+                                : "valor-saida"
+                            }
+                          >
+                            {item.tipo === "entrada" ? "+" : "-"}{" "}
+                            {formatarMoedas(item.valor)} Coins
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ color: "#fff", marginBottom: 12 }}>
+                    Relatório de QR Codes
+                  </h4>
+
+                  <div className="actions">
+                    <div className="main-card admin-inner-card">
+                      <strong>Total de QR Codes</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioQRCodes?.total_qrcodes ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Campanhas ativas</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioQRCodes?.total_ativos ?? 0}
+                      </div>
+                    </div>
+
+                    <div className="main-card admin-inner-card">
+                      <strong>Campanhas expiradas</strong>
+                      <div style={{ color: "#9fb3c8", marginTop: 8 }}>
+                        {relatorioQRCodes?.total_expirados ?? 0}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 16 }}>
+                    <h5 style={{ color: "#fff", marginBottom: 10 }}>
+                      Campanhas
+                    </h5>
+
+                    {!relatorioQRCodes?.campanhas?.length ? (
+                      <p style={{ color: "#ccc" }}>
+                        Nenhuma campanha encontrada.
+                      </p>
+                    ) : (
+                      relatorioQRCodes.campanhas.map((item) => (
+                        <div className="extrato-item" key={item._id}>
+                          <div>
+                            <strong>{item.nome}</strong>
+                            <div className="extrato-data">
+                              Código: {item.codigo}
+                            </div>
+                            <div className="extrato-data">
+                              Valor: {formatarMoedas(item.valor)} Coins
+                            </div>
+                            <div className="extrato-data">
+                              Início: {formatarDataHora(item.inicio)}
+                            </div>
+                            <div className="extrato-data">
+                              Fim: {formatarDataHora(item.fim)}
+                            </div>
+                          </div>
+
+                          <div style={{ textAlign: "right" }}>
+                            <div className="extrato-data">
+                              Resgates: {item.total_resgates ?? 0}
+                            </div>
+                            <div className="extrato-data">
+                              Locais: {item.locais_permitidos?.length || 0}
+                            </div>
+                            <div className="extrato-data">
+                              Status: {item.ativo ? "Ativo" : "Inativo"}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard

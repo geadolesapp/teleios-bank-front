@@ -335,6 +335,11 @@ function AdminDashboard({ setUser }) {
 
   const [buscaUsuario, setBuscaUsuario] = useState("");
 
+  const [novoIsLider, setNovoIsLider] = useState(false);
+  const [editIsLider, setEditIsLider] = useState(false);
+  const [mostrarRankingLideres, setMostrarRankingLideres] = useState(false);
+  const [rankingLideres, setRankingLideres] = useState([]);
+
   const [processandoResetSaldo, setProcessandoResetSaldo] = useState(false);
   const [processandoResetExtrato, setProcessandoResetExtrato] = useState(false);
   const [processandoResetGeral, setProcessandoResetGeral] = useState(false);
@@ -603,10 +608,12 @@ function AdminDashboard({ setUser }) {
 
       setRankingNext(response.data?.next?.ranking || []);
       setRankingGE(response.data?.ge?.ranking || []);
+      setRankingLideres(response.data?.lideres?.ranking || []);
     } catch (error) {
       console.error("Erro ao carregar rankings do admin:", error);
       setRankingNext([]);
       setRankingGE([]);
+      setRankingLideres([]);
     } finally {
       setCarregandoRankingsAdmin(false);
     }
@@ -614,7 +621,7 @@ function AdminDashboard({ setUser }) {
 
   function baixarModeloUsuarios() {
     const conteudo =
-      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial\n";
+      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial;is_lider\n";
 
     const blob = new Blob([conteudo], {
       type: "text/csv;charset=utf-8;",
@@ -885,7 +892,8 @@ function AdminDashboard({ setUser }) {
       await carregarRankingsAdmin();
 
       alert(
-        response.data?.message || "Saldo de todos os usuários resetado com sucesso",
+        response.data?.message ||
+          "Saldo de todos os usuários resetado com sucesso",
       );
     } catch (error) {
       const mensagem =
@@ -910,7 +918,8 @@ function AdminDashboard({ setUser }) {
       const response = await api.delete("/admin/users/reset-extrato");
 
       alert(
-        response.data?.message || "Extrato de todos os usuários apagado com sucesso",
+        response.data?.message ||
+          "Extrato de todos os usuários apagado com sucesso",
       );
     } catch (error) {
       const mensagem =
@@ -924,7 +933,7 @@ function AdminDashboard({ setUser }) {
 
   async function resetGeralDoSistema() {
     const aviso = window.confirm(
-      "ATENÇÃO: o reset geral irá apagar usuários comuns, extrato, QR Codes e mensagens do admin. Apenas o layout e o usuário admin@teleios.com serão mantidos. Deseja continuar?",
+      "ATENÇÃO: o reset geral irá apagar todos os usuários comuns, extrato, QR Codes e mensagens do admin. Apenas o layout e o usuário admin@teleios.com serão mantidos. Deseja continuar?",
     );
 
     if (!aviso) return;
@@ -936,7 +945,7 @@ function AdminDashboard({ setUser }) {
     if (confirmacao === null) return;
 
     if (String(confirmacao).trim().toLowerCase() !== "excluir") {
-      alert('Confirmação inválida. O reset geral foi cancelado.');
+      alert("Confirmação inválida. O reset geral foi cancelado.");
       return;
     }
 
@@ -994,6 +1003,7 @@ function AdminDashboard({ setUser }) {
     setNovoEmail("");
     setNovoSaldo("");
     setNovaSenha("");
+    setNovoIsLider(false);
     setMostrarSenha(false);
   }
 
@@ -1017,6 +1027,7 @@ function AdminDashboard({ setUser }) {
     setEditCelular(user.celular || "");
     setEditEmail(user.email || "");
     setEditSenha("");
+    setEditIsLider(!!user.is_lider);
     setMostrarSenhaEdicao(false);
     setMostrarUsuarios(true);
   }
@@ -1030,6 +1041,7 @@ function AdminDashboard({ setUser }) {
     setEditCelular("");
     setEditEmail("");
     setEditSenha("");
+    setEditIsLider(false);
     setMostrarSenhaEdicao(false);
   }
 
@@ -1077,6 +1089,7 @@ function AdminDashboard({ setUser }) {
         email: novoEmail.trim(),
         senha: novaSenha,
         saldo: Number(novoSaldo) || 0,
+        is_lider: novoIsLider,
       });
 
       limparFormularioCriacao();
@@ -1123,6 +1136,7 @@ function AdminDashboard({ setUser }) {
         idade: Number(editIdade) || 0,
         celular: editCelular.trim(),
         email: editEmail.trim(),
+        is_lider: editIsLider,
       };
 
       if (editSenha.trim()) {
@@ -1416,6 +1430,23 @@ function AdminDashboard({ setUser }) {
                 </button>
               </div>
 
+              <label
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  color: "#fff",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={novoIsLider}
+                  onChange={(e) => setNovoIsLider(e.target.checked)}
+                />
+                Usuário é líder
+              </label>
+
               <button
                 className="action-btn"
                 onClick={criarUsuario}
@@ -1466,7 +1497,7 @@ function AdminDashboard({ setUser }) {
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
               Use o modelo padrão com as colunas: nome, data_nascimento, email,
-              celular, sexo, senha, saldo_inicial.
+              celular, sexo, senha, saldo_inicial, is_lider.
             </p>
 
             {resultadoImportacao && (
@@ -1576,6 +1607,9 @@ function AdminDashboard({ setUser }) {
                           Saldo:{" "}
                           {Number(user.saldo || 0).toLocaleString("pt-BR")}{" "}
                           Coins
+                        </div>
+                        <div className="extrato-data">
+                          Líder: {user.is_lider ? "Sim" : "Não"}
                         </div>
                         <div className="extrato-data">Perfil: {user.role}</div>
                       </div>
@@ -1707,6 +1741,23 @@ function AdminDashboard({ setUser }) {
                               flexWrap: "wrap",
                             }}
                           >
+                            <label
+                              style={{
+                                width: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                color: "#fff",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={editIsLider}
+                                onChange={(e) => setEditIsLider(e.target.checked)}
+                              />
+                              Usuário é líder
+                            </label>
+
                             <button
                               className="action-btn"
                               onClick={salvarEdicao}
@@ -2000,9 +2051,9 @@ function AdminDashboard({ setUser }) {
             </div>
 
             <p style={{ color: "#ffb3b3", marginTop: 14, lineHeight: 1.6 }}>
-              O reset geral apaga usuários comuns, extrato, QR Codes e mensagens
-              do admin. O layout é mantido e o usuário admin@teleios.com é
-              preservado.
+              O reset geral apaga todos os usuários comuns, extrato, QR Codes e
+              mensagens do admin. O layout é mantido e o usuário
+              admin@teleios.com é preservado.
             </p>
           </SectionCard>
 
@@ -2291,6 +2342,47 @@ function AdminDashboard({ setUser }) {
               </p>
             ) : (
               rankingGE.map((item, index) => {
+                const info = getRankingInfo(index);
+                const nivelRanking = getNivelPorSaldo(item.saldo);
+
+                return (
+                  <div className={info.classe} key={item._id}>
+                    <div className="ranking-esquerda">
+                      <span className="ranking-medalha">{info.medalha}</span>
+
+                      <div className="ranking-textos">
+                        <strong>
+                          {info.posicao} {formatarNomeRanking(item.nome)}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="ranking-direita">
+                      <div className="ranking-nivel">{nivelRanking}</div>
+                      <div className="ranking-saldo">
+                        {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </SectionCard>
+
+          <SectionCard
+            title="Ranking Líderes"
+            subtitle="Grupo especial definido por marcação manual"
+            open={mostrarRankingLideres}
+            onToggle={() => setMostrarRankingLideres(!mostrarRankingLideres)}
+          >
+            {carregandoRankingsAdmin ? (
+              <p style={{ color: "#ccc" }}>Carregando ranking de líderes...</p>
+            ) : rankingLideres.length === 0 ? (
+              <p style={{ color: "#ccc" }}>
+                Nenhum usuário encontrado no ranking de líderes.
+              </p>
+            ) : (
+              rankingLideres.map((item, index) => {
                 const info = getRankingInfo(index);
                 const nivelRanking = getNivelPorSaldo(item.saldo);
 

@@ -611,7 +611,7 @@ function AdminDashboard({ setUser }) {
     try {
       const response = await api.get("/admin/reports/users");
       const dados = response.data || {};
-
+  
       const linhas = [
         ["campo", "valor"],
         ["total_usuarios", dados.total_usuarios ?? 0],
@@ -620,8 +620,38 @@ function AdminDashboard({ setUser }) {
         ["total_next", dados.total_next ?? 0],
         ["total_ge", dados.total_ge ?? 0],
         ["total_fora_faixa", dados.total_fora_faixa ?? 0],
+        [""],
+        [
+          "nome",
+          "email",
+          "celular",
+          "sexo",
+          "idade",
+          "data_nascimento",
+          "saldo",
+          "lider",
+          "ativo",
+          "perfil",
+          "data_criacao",
+        ],
       ];
-
+  
+      (dados.usuarios || []).forEach((usuario) => {
+        linhas.push([
+          escaparCSV(usuario.nome || ""),
+          escaparCSV(usuario.email || ""),
+          escaparCSV(usuario.celular || ""),
+          escaparCSV(usuario.sexo || ""),
+          Number(usuario.idade || 0),
+          escaparCSV(usuario.data_nascimento || ""),
+          Number(usuario.saldo || 0),
+          usuario.is_lider ? "Sim" : "Não",
+          usuario.ativo ? "Sim" : "Não",
+          escaparCSV(usuario.role || ""),
+          escaparCSV(usuario.createdAt || ""),
+        ]);
+      });
+  
       baixarArquivoCSV("relatorio_usuarios.csv", linhas);
     } catch (error) {
       const mensagem =

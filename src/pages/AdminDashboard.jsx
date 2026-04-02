@@ -645,8 +645,13 @@ function AdminDashboard({ setUser }) {
 
   async function salvarLayout() {
     try {
+      if (!Number(layoutCoinsPorNivel) || Number(layoutCoinsPorNivel) <= 0) {
+        alert("Informe uma quantidade válida de moedas por nível");
+        return;
+      }
+  
       setSalvandoLayout(true);
-
+  
       await api.put("/layout", {
         app_name: layoutNome,
         primary_color: layoutCorPrimaria,
@@ -654,50 +659,49 @@ function AdminDashboard({ setUser }) {
         accent_color: layoutCorDestaque,
         font_family: layoutFonte,
         show_clouds: layoutMostrarNuvens,
+        login_background_url: "",
         coins_per_level: Number(layoutCoinsPorNivel) || 500,
         level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
-
+  
       if (layoutLogoArquivo) {
         const formData = new FormData();
         formData.append("logo", layoutLogoArquivo);
-      
+  
         await api.post("/layout/logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-      
-        setLayoutLogoArquivo(null);
       }
-      
+  
       if (layoutCoinLogoArquivo) {
         const formData = new FormData();
         formData.append("coin_logo", layoutCoinLogoArquivo);
-      
+  
         await api.post("/layout/coin-logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-      
+  
       if (layoutLoginBackgroundArquivo) {
         const formData = new FormData();
         formData.append("login_background", layoutLoginBackgroundArquivo);
-      
+  
         await api.post("/layout/login-background", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-      
+  
       setLayoutLogoArquivo(null);
       setLayoutCoinLogoArquivo(null);
       setLayoutLoginBackgroundArquivo(null);
-      }
-
+  
+      await carregarLayout();
       alert("Layout atualizado com sucesso");
     } catch (error) {
       const mensagem = error.response?.data?.message || "Erro ao salvar layout";

@@ -518,7 +518,9 @@ function AdminDashboard({ setUser }) {
         ? layoutNomesNiveis
         : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
   
-    const indice = Math.floor(saldoAtual / 500);
+    const divisor = Number(layoutCoinsPorNivel) > 0 ? Number(layoutCoinsPorNivel) : 500;
+    const indice = Math.floor(saldoAtual / divisor);
+  
     return niveis[indice] || `Nível ${indice + 1}`;
   }
 

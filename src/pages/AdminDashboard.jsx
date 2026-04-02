@@ -621,21 +621,21 @@ function AdminDashboard({ setUser }) {
 
   function baixarModeloUsuarios() {
     const conteudo =
-      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial;is_lider\n";
-
+      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial;lider\n";
+  
     const blob = new Blob([conteudo], {
       type: "text/csv;charset=utf-8;",
     });
-
+  
     const url = window.URL.createObjectURL(blob);
-
+  
     const link = document.createElement("a");
     link.href = url;
     link.download = "modelo_usuarios.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
+  
     window.URL.revokeObjectURL(url);
   }
 
@@ -1497,7 +1497,7 @@ function AdminDashboard({ setUser }) {
 
             <p style={{ color: "#9fb3c8", marginTop: 10, fontSize: 14 }}>
               Use o modelo padrão com as colunas: nome, data_nascimento, email,
-              celular, sexo, senha, saldo_inicial, is_lider.
+              celular, sexo, senha, saldo_inicial, lider.
             </p>
 
             {resultadoImportacao && (

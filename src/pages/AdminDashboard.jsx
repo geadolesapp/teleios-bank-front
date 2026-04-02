@@ -2173,6 +2173,17 @@ function AdminDashboard({ setUser }) {
                     setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
                   }
                 />
+                <div style={{ width: "100%" }}>
+                  <label className="color-label">Logo da tela de login</label>
+                  <input
+                    className="input"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(e) =>
+                      setLayoutLogoArquivo(e.target.files?.[0] || null)
+                    }
+                  />
+                </div>
 
                 <div style={{ marginTop: 10 }}>
                   <button

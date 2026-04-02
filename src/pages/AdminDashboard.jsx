@@ -247,32 +247,57 @@ function ModalMapa({ onClose, onConfirm }) {
 function SectionCard({
   title,
   subtitle,
+  icon,
   open,
   onToggle,
   children,
   rightContent,
+  hidden = false,
 }) {
+  if (hidden) return null;
+
   return (
-    <div className="main-card admin-inner-card">
-      <div className="section-card-header">
-        <div className="section-card-texts">
-          <h3>{title}</h3>
-          {subtitle ? <p>{subtitle}</p> : null}
+    <div
+      className={`admin-menu-card ${open ? "admin-menu-card-open" : ""}`}
+      onClick={() => {
+        if (!open) onToggle();
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (!open && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+    >
+      <div className="admin-menu-card-header">
+        <div className="admin-menu-card-left">
+          <div className="admin-menu-icon">{icon}</div>
+
+          <div className="admin-menu-texts">
+            <h3>{title}</h3>
+            {subtitle ? <p>{subtitle}</p> : null}
+          </div>
         </div>
 
-        <div className="section-card-actions">
+        <div
+          className="admin-menu-card-right"
+          onClick={(e) => e.stopPropagation()}
+        >
           {rightContent}
+
           <button
             type="button"
-            className="action-btn secondary section-toggle-btn"
+            className="admin-menu-toggle"
             onClick={onToggle}
           >
-            {open ? "Ocultar" : "Expandir"}
+            {open ? "Ocultar" : "Abrir"}
           </button>
         </div>
       </div>
 
-      {open && <div style={{ marginTop: 18 }}>{children}</div>}
+      {open && <div className="admin-menu-card-content">{children}</div>}
     </div>
   );
 }
@@ -335,6 +360,7 @@ function AdminDashboard({ setUser }) {
   const [mostrarRankingGE, setMostrarRankingGE] = useState(false);
 
   const [buscaUsuario, setBuscaUsuario] = useState("");
+  const [buscaMenuAdmin, setBuscaMenuAdmin] = useState("");
 
   const [novoIsLider, setNovoIsLider] = useState(false);
   const [editIsLider, setEditIsLider] = useState(false);
@@ -611,7 +637,7 @@ function AdminDashboard({ setUser }) {
     try {
       const response = await api.get("/admin/reports/users");
       const dados = response.data || {};
-  
+
       const linhas = [
         ["campo", "valor"],
         ["total_usuarios", dados.total_usuarios ?? 0],
@@ -635,7 +661,7 @@ function AdminDashboard({ setUser }) {
           "data_criacao",
         ],
       ];
-  
+
       (dados.usuarios || []).forEach((usuario) => {
         linhas.push([
           escaparCSV(usuario.nome || ""),
@@ -651,7 +677,7 @@ function AdminDashboard({ setUser }) {
           escaparCSV(usuario.createdAt || ""),
         ]);
       });
-  
+
       baixarArquivoCSV("relatorio_usuarios.csv", linhas);
     } catch (error) {
       const mensagem =
@@ -666,7 +692,15 @@ function AdminDashboard({ setUser }) {
       const dados = response.data || {};
 
       const linhas = [
-        ["grupo", "posicao", "nome", "saldo", "idade", "data_nascimento", "lider"],
+        [
+          "grupo",
+          "posicao",
+          "nome",
+          "saldo",
+          "idade",
+          "data_nascimento",
+          "lider",
+        ],
       ];
 
       const adicionarGrupo = (grupoNome, lista = []) => {
@@ -701,15 +735,7 @@ function AdminDashboard({ setUser }) {
       const dados = response.data || {};
 
       const linhas = [
-        [
-          "usuario",
-          "email",
-          "tipo",
-          "valor",
-          "descricao",
-          "origem",
-          "data",
-        ],
+        ["usuario", "email", "tipo", "valor", "descricao", "origem", "data"],
       ];
 
       (dados.transacoes || []).forEach((item) => {
@@ -1515,6 +1541,13 @@ function AdminDashboard({ setUser }) {
     setUser(null);
   }
 
+  function menuVisivel(texto) {
+    const termo = buscaMenuAdmin.trim().toLowerCase();
+    if (!termo) return true;
+
+    return texto.toLowerCase().includes(termo);
+  }
+
   return (
     <div className="dashboard app-theme-bg">
       <div className="dashboard-wrapper page-shell">
@@ -1526,12 +1559,30 @@ function AdminDashboard({ setUser }) {
           </button>
         </div>
 
-        <div className="admin-sections-shell">
+        <div className="admin-dashboard-search-wrap">
+          <div className="admin-dashboard-search-box">
+            <span className="admin-dashboard-search-icon">🔎</span>
+            <input
+              className="admin-dashboard-search-input"
+              placeholder="Pesquisar menu do admin"
+              value={buscaMenuAdmin}
+              onChange={(e) => setBuscaMenuAdmin(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="admin-sections-shell admin-sections-shell-modern">
           <SectionCard
             title="Criar usuário manualmente"
             subtitle="Cadastro individual de usuário"
+            icon="👤"
             open={mostrarCriacaoManual}
             onToggle={() => setMostrarCriacaoManual(!mostrarCriacaoManual)}
+            hidden={
+              !menuVisivel(
+                "criar usuário manualmente cadastro individual usuário",
+              )
+            }
           >
             <div className="actions">
               <input
@@ -1653,8 +1704,14 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Criar usuários por carga"
             subtitle="Importação em lote por arquivo"
+            icon="📥"
             open={mostrarImportacao}
             onToggle={() => setMostrarImportacao(!mostrarImportacao)}
+            hidden={
+              !menuVisivel(
+                "criar usuários por carga importação lote arquivo csv excel",
+              )
+            }
           >
             <div className="actions">
               <button
@@ -1738,8 +1795,14 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Usuários cadastrados"
             subtitle={`Total: ${users.length}`}
+            icon="📋"
             open={mostrarUsuarios}
             onToggle={() => setMostrarUsuarios(!mostrarUsuarios)}
+            hidden={
+              !menuVisivel(
+                "usuários cadastrados lista usuários editar saldo buscar",
+              )
+            }
           >
             <div style={{ marginTop: 0 }}>
               <input
@@ -1983,8 +2046,12 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Mensagens do admin"
             subtitle="Envio de avisos para grupos"
+            icon="💬"
             open={mostrarMensagensAdmin}
             onToggle={() => setMostrarMensagensAdmin(!mostrarMensagensAdmin)}
+            hidden={
+              !menuVisivel("mensagens admin avisos grupos next ge lideres")
+            }
             rightContent={
               <button
                 type="button"
@@ -2084,8 +2151,14 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Personalização do layout"
             subtitle="Tema visual da aplicação"
+            icon="🎨"
             open={mostrarLayout}
             onToggle={() => setMostrarLayout(!mostrarLayout)}
+            hidden={
+              !menuVisivel(
+                "personalização layout tema visual cores fonte logo login moeda",
+              )
+            }
           >
             <div className="actions">
               <div className="color-field">
@@ -2152,6 +2225,18 @@ function AdminDashboard({ setUser }) {
               </div>
 
               <div style={{ width: "100%" }}>
+                <label className="color-label">Logo da tela de login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutLogoArquivo(e.target.files?.[0] || null)
+                  }
+                />
+              </div>
+
+              <div style={{ width: "100%" }}>
                 <label className="color-label">Logo da moeda</label>
                 <input
                   className="input"
@@ -2173,17 +2258,6 @@ function AdminDashboard({ setUser }) {
                     setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
                   }
                 />
-                <div style={{ width: "100%" }}>
-                  <label className="color-label">Logo da tela de login</label>
-                  <input
-                    className="input"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    onChange={(e) =>
-                      setLayoutLogoArquivo(e.target.files?.[0] || null)
-                    }
-                  />
-                </div>
 
                 <div style={{ marginTop: 10 }}>
                   <button
@@ -2209,8 +2283,14 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Reset administrativo"
             subtitle="Ações de limpeza e restauração do sistema"
+            icon="⚠️"
             open={mostrarResetAdmin}
             onToggle={() => setMostrarResetAdmin(!mostrarResetAdmin)}
+            hidden={
+              !menuVisivel(
+                "reset administrativo limpar restaurar sistema saldo extrato reset geral",
+              )
+            }
           >
             <div className="actions">
               <button
@@ -2261,8 +2341,14 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Relatórios"
             subtitle="Exportação de arquivos CSV"
+            icon="📊"
             open={mostrarRelatorios}
             onToggle={() => setMostrarRelatorios(!mostrarRelatorios)}
+            hidden={
+              !menuVisivel(
+                "relatórios exportação csv usuários rankings extrato qrcodes",
+              )
+            }
           >
             <div className="actions">
               <button
@@ -2306,8 +2392,12 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Gerar QR Code"
             subtitle="Criar novas campanhas com QR"
+            icon="📱"
             open={mostrarGerarQR}
             onToggle={() => setMostrarGerarQR(!mostrarGerarQR)}
+            hidden={
+              !menuVisivel("gerar qr code campanha localização locais resgate")
+            }
           >
             <div className="actions">
               <input
@@ -2433,8 +2523,10 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="QR Codes gerados"
             subtitle={`Total: ${qrcodes.length}`}
+            icon="🧾"
             open={mostrarQRCodesGerados}
             onToggle={() => setMostrarQRCodesGerados(!mostrarQRCodesGerados)}
+            hidden={!menuVisivel("qr codes gerados campanhas lista qrcode")}
           >
             {carregandoQRCodes ? (
               <p style={{ color: "#ccc" }}>Carregando QR Codes...</p>
@@ -2536,8 +2628,10 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Ranking Next"
             subtitle="Faixa etária de 11 a 13 anos"
+            icon="🏅"
             open={mostrarRankingNext}
             onToggle={() => setMostrarRankingNext(!mostrarRankingNext)}
+            hidden={!menuVisivel("ranking next 11 13 faixa etária")}
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
@@ -2577,8 +2671,10 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Ranking GE"
             subtitle="Faixa etária de 14 a 17 anos"
+            icon="🥈"
             open={mostrarRankingGE}
             onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
+            hidden={!menuVisivel("ranking ge 14 17 faixa etária")}
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
@@ -2618,8 +2714,10 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Ranking Líderes"
             subtitle="Grupo especial definido por marcação manual"
+            icon="⭐"
             open={mostrarRankingLideres}
             onToggle={() => setMostrarRankingLideres(!mostrarRankingLideres)}
+            hidden={!menuVisivel("ranking líderes lideres grupo especial liderança")}
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking de líderes...</p>

@@ -581,6 +581,7 @@ function AdminDashboard({ setUser }) {
     if (grupo === "todos") return "Enviada para todos";
     if (grupo === "next") return "Enviada para o grupo Next";
     if (grupo === "ge") return "Enviada para o grupo GE";
+    if (grupo === "lideres") return "Enviada para o grupo Líderes";
     return "Grupo não identificado";
   }
 
@@ -1831,6 +1832,7 @@ function AdminDashboard({ setUser }) {
                 <option value="todos">Enviar para todos</option>
                 <option value="next">Enviar para o grupo Next</option>
                 <option value="ge">Enviar para o grupo GE</option>
+                <option value="lideres">Enviar para o grupo Líderes</option>
               </select>
 
               <button

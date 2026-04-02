@@ -342,7 +342,8 @@ function AdminDashboard({ setUser }) {
   const [layoutMostrarNuvens, setLayoutMostrarNuvens] = useState(true);
   const [layoutLogoArquivo, setLayoutLogoArquivo] = useState(null);
   const [layoutCoinLogoArquivo, setLayoutCoinLogoArquivo] = useState(null);
-  const [layoutLoginBackgroundArquivo, setLayoutLoginBackgroundArquivo] = useState(null);
+  const [layoutLoginBackgroundArquivo, setLayoutLoginBackgroundArquivo] =
+    useState(null);
   const [layoutCoinsPorNivel, setLayoutCoinsPorNivel] = useState("500");
   const [layoutNomesNiveis, setLayoutNomesNiveis] = useState([
     "Nível 1",
@@ -396,7 +397,8 @@ function AdminDashboard({ setUser }) {
     const numeros = valor.replace(/\D/g, "").slice(0, 8);
 
     if (numeros.length <= 2) return numeros;
-    if (numeros.length <= 4) return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
+    if (numeros.length <= 4)
+      return `${numeros.slice(0, 2)}/${numeros.slice(2)}`;
 
     return `${numeros.slice(0, 2)}/${numeros.slice(2, 4)}/${numeros.slice(4)}`;
   }
@@ -512,15 +514,24 @@ function AdminDashboard({ setUser }) {
 
   function getNivelPorSaldo(saldo) {
     const saldoAtual = Number(saldo || 0);
-  
+
     const niveis =
       Array.isArray(layoutNomesNiveis) && layoutNomesNiveis.length === 7
         ? layoutNomesNiveis
-        : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
-  
-    const divisor = Number(layoutCoinsPorNivel) > 0 ? Number(layoutCoinsPorNivel) : 500;
+        : [
+            "Nível 1",
+            "Pro",
+            "Elite",
+            "Legend",
+            "Master",
+            "Supreme",
+            "Omega",
+          ];
+
+    const divisor =
+      Number(layoutCoinsPorNivel) > 0 ? Number(layoutCoinsPorNivel) : 500;
     const indice = Math.floor(saldoAtual / divisor);
-  
+
     return niveis[indice] || `Nível ${indice + 1}`;
   }
 
@@ -597,7 +608,8 @@ function AdminDashboard({ setUser }) {
   }
 
   function baixarModeloUsuarios() {
-    const conteudo = "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial\n";
+    const conteudo =
+      "nome;data_nascimento;email;celular;sexo;senha;saldo_inicial\n";
 
     const blob = new Blob([conteudo], {
       type: "text/csv;charset=utf-8;",
@@ -630,7 +642,15 @@ function AdminDashboard({ setUser }) {
       setLayoutNomesNiveis(
         Array.isArray(config.level_names) && config.level_names.length === 7
           ? config.level_names
-          : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
+          : [
+              "Nível 1",
+              "Pro",
+              "Elite",
+              "Legend",
+              "Master",
+              "Supreme",
+              "Omega",
+            ],
       );
     } catch (error) {
       console.error("Erro ao carregar layout:", error);
@@ -641,9 +661,9 @@ function AdminDashboard({ setUser }) {
     const confirmar = window.confirm(
       "Deseja realmente remover a imagem de fundo do login?",
     );
-  
+
     if (!confirmar) return;
-  
+
     try {
       await api.delete("/layout/login-background");
       setLayoutLoginBackgroundArquivo(null);
@@ -663,9 +683,9 @@ function AdminDashboard({ setUser }) {
         alert("Informe uma quantidade válida de moedas por nível");
         return;
       }
-  
+
       setSalvandoLayout(true);
-  
+
       await api.put("/layout", {
         app_name: layoutNome,
         primary_color: layoutCorPrimaria,
@@ -673,48 +693,47 @@ function AdminDashboard({ setUser }) {
         accent_color: layoutCorDestaque,
         font_family: layoutFonte,
         show_clouds: layoutMostrarNuvens,
-        login_background_url: "",
         coins_per_level: Number(layoutCoinsPorNivel) || 500,
         level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
-  
+
       if (layoutLogoArquivo) {
         const formData = new FormData();
         formData.append("logo", layoutLogoArquivo);
-  
+
         await api.post("/layout/logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutCoinLogoArquivo) {
         const formData = new FormData();
         formData.append("coin_logo", layoutCoinLogoArquivo);
-  
+
         await api.post("/layout/coin-logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutLoginBackgroundArquivo) {
         const formData = new FormData();
         formData.append("login_background", layoutLoginBackgroundArquivo);
-  
+
         await api.post("/layout/login-background", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       setLayoutLogoArquivo(null);
       setLayoutCoinLogoArquivo(null);
       setLayoutLoginBackgroundArquivo(null);
-  
+
       await carregarLayout();
       alert("Layout atualizado com sucesso");
     } catch (error) {
@@ -1354,8 +1373,9 @@ function AdminDashboard({ setUser }) {
                 </p>
 
                 <p style={{ color: "#9fb3c8" }}>
-                  Total de linhas: {resultadoImportacao.total_linhas} | Importados:{" "}
-                  {resultadoImportacao.importados} | Erros: {resultadoImportacao.erros}
+                  Total de linhas: {resultadoImportacao.total_linhas} |
+                  Importados: {resultadoImportacao.importados} | Erros:{" "}
+                  {resultadoImportacao.erros}
                 </p>
 
                 <div
@@ -1809,19 +1829,7 @@ function AdminDashboard({ setUser }) {
                     setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
                   }
                 />
-              </div>
 
-              <div style={{ width: "100%" }}>
-                <label className="color-label">Imagem de fundo do login</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(e) =>
-                    setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
-                  }
-                />
-              
                 <div style={{ marginTop: 10 }}>
                   <button
                     type="button"

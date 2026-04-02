@@ -326,6 +326,7 @@ function AdminDashboard({ setUser }) {
   const [mostrarCriacaoManual, setMostrarCriacaoManual] = useState(false);
   const [mostrarImportacao, setMostrarImportacao] = useState(false);
   const [mostrarLayout, setMostrarLayout] = useState(false);
+  const [mostrarResetAdmin, setMostrarResetAdmin] = useState(false);
   const [mostrarGerarQR, setMostrarGerarQR] = useState(false);
   const [mostrarQRCodesGerados, setMostrarQRCodesGerados] = useState(false);
   const [mostrarMensagensAdmin, setMostrarMensagensAdmin] = useState(false);
@@ -333,6 +334,10 @@ function AdminDashboard({ setUser }) {
   const [mostrarRankingGE, setMostrarRankingGE] = useState(false);
 
   const [buscaUsuario, setBuscaUsuario] = useState("");
+
+  const [processandoResetSaldo, setProcessandoResetSaldo] = useState(false);
+  const [processandoResetExtrato, setProcessandoResetExtrato] = useState(false);
+  const [processandoResetGeral, setProcessandoResetGeral] = useState(false);
 
   const [layoutNome, setLayoutNome] = useState("");
   const [layoutCorPrimaria, setLayoutCorPrimaria] = useState("#00c2cb");
@@ -861,6 +866,104 @@ function AdminDashboard({ setUser }) {
       const mensagem =
         error.response?.data?.message || "Erro ao limpar mensagens";
       alert(mensagem);
+    }
+  }
+
+  async function resetarSaldoDeTodos() {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja resetar o saldo de todos os usuários? Essa ação irá zerar os saldos.",
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setProcessandoResetSaldo(true);
+
+      const response = await api.post("/admin/users/reset-saldos");
+
+      await carregarUsuarios();
+      await carregarRankingsAdmin();
+
+      alert(
+        response.data?.message || "Saldo de todos os usuários resetado com sucesso",
+      );
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Erro ao resetar saldo de todos os usuários";
+      alert(mensagem);
+    } finally {
+      setProcessandoResetSaldo(false);
+    }
+  }
+
+  async function apagarExtratoDeTodos() {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja apagar todo o extrato de todos os usuários? Essa ação não poderá ser desfeita.",
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setProcessandoResetExtrato(true);
+
+      const response = await api.delete("/admin/users/reset-extrato");
+
+      alert(
+        response.data?.message || "Extrato de todos os usuários apagado com sucesso",
+      );
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Erro ao apagar o extrato de todos os usuários";
+      alert(mensagem);
+    } finally {
+      setProcessandoResetExtrato(false);
+    }
+  }
+
+  async function resetGeralDoSistema() {
+    const aviso = window.confirm(
+      "ATENÇÃO: o reset geral irá apagar usuários comuns, extrato, QR Codes e mensagens do admin. Apenas o layout e o usuário admin@teleios.com serão mantidos. Deseja continuar?",
+    );
+
+    if (!aviso) return;
+
+    const confirmacao = window.prompt(
+      'Para confirmar o reset geral, digite exatamente a palavra "excluir".',
+    );
+
+    if (confirmacao === null) return;
+
+    if (String(confirmacao).trim().toLowerCase() !== "excluir") {
+      alert('Confirmação inválida. O reset geral foi cancelado.');
+      return;
+    }
+
+    try {
+      setProcessandoResetGeral(true);
+
+      const response = await api.post("/admin/reset-geral", {
+        confirmacao: "excluir",
+      });
+
+      await carregarUsuarios();
+      await carregarQRCodes();
+      await carregarMensagensAdmin();
+      await carregarRankingsAdmin();
+
+      setBuscaUsuario("");
+      cancelarEdicao();
+      limparFormularioCriacao();
+      limparFormularioQRCode();
+
+      alert(response.data?.message || "Reset geral realizado com sucesso");
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao executar o reset geral";
+      alert(mensagem);
+    } finally {
+      setProcessandoResetGeral(false);
     }
   }
 
@@ -1849,6 +1952,58 @@ function AdminDashboard({ setUser }) {
                 {salvandoLayout ? "Salvando..." : "Salvar layout"}
               </button>
             </div>
+          </SectionCard>
+
+          <SectionCard
+            title="Reset administrativo"
+            subtitle="Ações de limpeza e restauração do sistema"
+            open={mostrarResetAdmin}
+            onToggle={() => setMostrarResetAdmin(!mostrarResetAdmin)}
+          >
+            <div className="actions">
+              <button
+                type="button"
+                className="action-btn secondary"
+                onClick={resetarSaldoDeTodos}
+                disabled={processandoResetSaldo}
+              >
+                {processandoResetSaldo
+                  ? "Resetando saldos..."
+                  : "Resetar saldo de todos"}
+              </button>
+
+              <button
+                type="button"
+                className="action-btn secondary"
+                onClick={apagarExtratoDeTodos}
+                disabled={processandoResetExtrato}
+              >
+                {processandoResetExtrato
+                  ? "Apagando extrato..."
+                  : "Apagar extrato de todos"}
+              </button>
+
+              <button
+                type="button"
+                className="action-btn secondary"
+                onClick={resetGeralDoSistema}
+                disabled={processandoResetGeral}
+                style={{
+                  borderColor: "#ff6b6b",
+                  color: "#ff6b6b",
+                }}
+              >
+                {processandoResetGeral
+                  ? "Executando reset geral..."
+                  : "Reset geral do sistema"}
+              </button>
+            </div>
+
+            <p style={{ color: "#ffb3b3", marginTop: 14, lineHeight: 1.6 }}>
+              O reset geral apaga usuários comuns, extrato, QR Codes e mensagens
+              do admin. O layout é mantido e o usuário admin@teleios.com é
+              preservado.
+            </p>
           </SectionCard>
 
           <SectionCard

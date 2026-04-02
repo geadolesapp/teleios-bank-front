@@ -4,7 +4,7 @@ import Cropper from "react-easy-crop";
 import api from "../services/api";
 import QRCodeScanner from "./QRCodeScanner";
 import Footer from "../components/Footer";
-import moedaTeleios from "../assets/moedaTeleios.png"; // logo da moeda agora virá do layout público
+import moedaTeleios from "../assets/moedaTeleios.png";
 
 function createImage(url) {
   return new Promise((resolve, reject) => {
@@ -285,12 +285,12 @@ function Dashboard({ user, setUser }) {
 
   function getNivelPorSaldo(saldo) {
     const saldoAtual = Number(saldo || 0);
-  
+
     const niveis =
       Array.isArray(nomesNiveis) && nomesNiveis.length === 7
         ? nomesNiveis
         : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"];
-  
+
     const divisor = Number(coinsPerLevel) > 0 ? Number(coinsPerLevel) : 500;
     const indice = Math.floor(saldoAtual / divisor);
     return niveis[indice] || `Nível ${indice + 1}`;
@@ -307,11 +307,11 @@ function Dashboard({ user, setUser }) {
     const saldoAtual = Number(saldo || 0);
     const divisor = Number(coinsPerLevel) > 0 ? Number(coinsPerLevel) : 500;
     const resto = saldoAtual % divisor;
-  
+
     if (resto === 0 && saldoAtual !== 0) {
       return divisor;
     }
-  
+
     return divisor - resto;
   }
 
@@ -323,28 +323,28 @@ function Dashboard({ user, setUser }) {
   }
 
   function obterUrlAvatar(foto) {
-  if (!foto) {
-    return "https://i.pravatar.cc/100";
+    if (!foto) {
+      return "https://i.pravatar.cc/100";
+    }
+
+    if (/^https?:\/\//i.test(foto)) {
+      return foto;
+    }
+
+    return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
   }
 
-  if (/^https?:\/\//i.test(foto)) {
-    return foto;
+  function obterUrlLogoMoeda(foto) {
+    if (!foto) {
+      return moedaTeleios;
+    }
+
+    if (/^https?:\/\//i.test(foto)) {
+      return foto;
+    }
+
+    return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
   }
-
-  return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
-}
-
-function obterUrlLogoMoeda(foto) {
-  if (!foto) {
-    return moedaTeleios;
-  }
-
-  if (/^https?:\/\//i.test(foto)) {
-    return foto;
-  }
-
-  return `${api.defaults.baseURL.replace("/api", "")}${foto}`;
-}
 
   const notificacoesNaoLidas = mensagens.filter((m) => !m.lida).length;
   const saldoAtual = Number(dadosUsuario?.saldo || 0);
@@ -354,6 +354,8 @@ function obterUrlLogoMoeda(foto) {
 
   const extratoVisivel = extrato.slice(0, 4);
   const extratoRestante = extrato.slice(4);
+
+  const tituloRanking = grupoRanking ? `Ranking ${grupoRanking}` : "Ranking";
 
   if (loading) {
     return (
@@ -543,7 +545,7 @@ function obterUrlLogoMoeda(foto) {
           </div>
 
           <div className="extrato">
-            <h3>{grupoRanking ? `Ranking ${grupoRanking}` : "Ranking"}</h3>
+            <h3>{tituloRanking}</h3>
 
             {ranking.length === 0 ? (
               <p style={{ color: "#ccc" }}>Nenhum usuário no ranking.</p>

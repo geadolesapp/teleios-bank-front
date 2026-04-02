@@ -561,14 +561,6 @@ function AdminDashboard({ setUser }) {
     return "Grupo não identificado";
   }
 
-  function atualizarNomeNivel(index, valor) {
-    setLayoutNomesNiveis((prev) => {
-      const novos = [...prev];
-      novos[index] = valor;
-      return novos;
-    });
-  }
-
   async function carregarUsuarios() {
     try {
       setErro("");

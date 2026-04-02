@@ -2052,15 +2052,6 @@ function AdminDashboard({ setUser }) {
             hidden={
               !menuVisivel("mensagens admin avisos grupos next ge lideres")
             }
-            rightContent={
-              <button
-                type="button"
-                className="action-btn secondary section-inline-btn"
-                onClick={limparMensagensAdmin}
-              >
-                Limpar
-              </button>
-            }
           >
             <div className="actions">
               <input
@@ -2096,6 +2087,14 @@ function AdminDashboard({ setUser }) {
                 disabled={enviandoMensagem}
               >
                 {enviandoMensagem ? "Enviando..." : "Enviar mensagem"}
+              </button>
+              
+              <button
+                type="button"
+                className="action-btn secondary"
+                onClick={limparMensagensAdmin}
+              >
+                Limpar mensagens
               </button>
             </div>
 

@@ -342,6 +342,7 @@ function AdminDashboard({ setUser }) {
   const [layoutMostrarNuvens, setLayoutMostrarNuvens] = useState(true);
   const [layoutLogoArquivo, setLayoutLogoArquivo] = useState(null);
   const [layoutCoinLogoArquivo, setLayoutCoinLogoArquivo] = useState(null);
+  const [layoutLoginBackgroundArquivo, setLayoutLoginBackgroundArquivo] = useState(null);
   const [layoutCoinsPorNivel, setLayoutCoinsPorNivel] = useState("500");
   const [layoutNomesNiveis, setLayoutNomesNiveis] = useState([
     "Nível 1",
@@ -679,8 +680,22 @@ function AdminDashboard({ setUser }) {
             "Content-Type": "multipart/form-data",
           },
         });
+      }
       
-        setLayoutCoinLogoArquivo(null);
+      if (layoutLoginBackgroundArquivo) {
+        const formData = new FormData();
+        formData.append("login_background", layoutLoginBackgroundArquivo);
+      
+        await api.post("/layout/login-background", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+      
+      setLayoutLogoArquivo(null);
+      setLayoutCoinLogoArquivo(null);
+      setLayoutLoginBackgroundArquivo(null);
       }
 
       alert("Layout atualizado com sucesso");
@@ -1762,6 +1777,18 @@ function AdminDashboard({ setUser }) {
                   accept="image/png,image/jpeg,image/webp"
                   onChange={(e) =>
                     setLayoutCoinLogoArquivo(e.target.files?.[0] || null)
+                  }
+                />
+              </div>
+
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Imagem de fundo do login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
                   }
                 />
               </div>

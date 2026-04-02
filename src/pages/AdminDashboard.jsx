@@ -643,6 +643,26 @@ function AdminDashboard({ setUser }) {
     }
   }
 
+  async function removerImagemLogin() {
+    const confirmar = window.confirm(
+      "Deseja realmente remover a imagem de fundo do login?",
+    );
+  
+    if (!confirmar) return;
+  
+    try {
+      await api.delete("/layout/login-background");
+      setLayoutLoginBackgroundArquivo(null);
+      await carregarLayout();
+      alert("Imagem de fundo do login removida com sucesso");
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Erro ao remover imagem de fundo do login";
+      alert(mensagem);
+    }
+  }
+
   async function salvarLayout() {
     try {
       if (!Number(layoutCoinsPorNivel) || Number(layoutCoinsPorNivel) <= 0) {
@@ -1798,16 +1818,25 @@ function AdminDashboard({ setUser }) {
               </div>
 
               <div style={{ width: "100%" }}>
-                <label className="color-label">Nomes dos níveis</label>
-                {layoutNomesNiveis.map((nivel, index) => (
-                  <input
-                    key={index}
-                    className="input"
-                    placeholder={`Nome do nível ${index + 1}`}
-                    value={nivel}
-                    onChange={(e) => atualizarNomeNivel(index, e.target.value)}
-                  />
-                ))}
+                <label className="color-label">Imagem de fundo do login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
+                  }
+                />
+              
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="action-btn secondary"
+                    onClick={removerImagemLogin}
+                  >
+                    Remover imagem do login
+                  </button>
+                </div>
               </div>
 
               <button

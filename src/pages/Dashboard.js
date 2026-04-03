@@ -359,18 +359,11 @@ function Dashboard({ user, setUser }) {
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#0b1d2a",
-          color: "#fff",
-          fontSize: "20px",
-        }}
-      >
-        Carregando dashboard...
+      <div className="teleios-loading-screen">
+        <div className="teleios-loading-box">
+          <div className="teleios-loading-spinner" />
+          <p>Carregando...</p>
+        </div>
       </div>
     );
   }

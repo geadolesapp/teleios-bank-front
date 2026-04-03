@@ -373,45 +373,45 @@ function Dashboard({ user, setUser }) {
       <div className="dashboard-wrapper page-shell">
         <div className="header">
           <div className="user-info">
-            <div
-              className={`avatar-upload ${dadosUsuario?.is_lider ? "avatar-upload-lider" : ""}`}
-              onClick={abrirSeletorFoto}
-              title="Clique para alterar a foto"
-            >
-              <img
-                src={obterUrlAvatar(dadosUsuario?.foto)}
-                alt="avatar"
-                className={`avatar ${dadosUsuario?.is_lider ? "avatar-lider" : ""}`}
-              />
-        
-              <div className="avatar-overlay">
-                <span>{enviandoFoto ? "Enviando..." : "Editar"}</span>
+            <div className="avatar-user-block">
+              <div
+                className={`avatar-upload ${dadosUsuario?.is_lider ? "avatar-upload-lider" : ""}`}
+                onClick={abrirSeletorFoto}
+                title="Clique para alterar a foto"
+              >
+                <img
+                  src={obterUrlAvatar(dadosUsuario?.foto)}
+                  alt="avatar"
+                  className={`avatar ${dadosUsuario?.is_lider ? "avatar-lider" : ""}`}
+                />
+          
+                <div className="avatar-overlay">
+                  <span>{enviandoFoto ? "Enviando..." : "Editar"}</span>
+                </div>
+          
+                <input
+                  ref={inputFotoRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  style={{ display: "none" }}
+                  onChange={handleSelecionarFoto}
+                />
               </div>
-        
-              <input
-                ref={inputFotoRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                style={{ display: "none" }}
-                onChange={handleSelecionarFoto}
-              />
+          
+              {dadosUsuario?.is_lider && (
+                <span className="lider-badge lider-badge-below">LÍDER</span>
+              )}
             </div>
-        
+          
             <div>
               <span className="user-name">
                 Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
               </span>
-        
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-                <div style={{ color: "#6ecbff", fontSize: 13 }}>
-                  {nivelAtual}
-                </div>
-        
-                {dadosUsuario?.is_lider && (
-                  <span className="lider-badge">LÍDER</span>
-                )}
+          
+              <div style={{ color: "#6ecbff", fontSize: 13, marginTop: 4 }}>
+                {nivelAtual}
               </div>
-        
+          
               <div style={{ color: "#9fb3c8", fontSize: 13, marginTop: 4 }}>
                 Toque na foto para alterar
               </div>

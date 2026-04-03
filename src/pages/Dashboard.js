@@ -398,7 +398,9 @@ function Dashboard({ user, setUser }) {
             </div>
 
             <div>
-              <span className="user-name">Olá, {dadosUsuario?.nome}</span>
+              <span className="user-name">
+                Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
+              </span>
               <div style={{ color: "#6ecbff", fontSize: 13, marginTop: 4 }}>
                 {nivelAtual}
               </div>

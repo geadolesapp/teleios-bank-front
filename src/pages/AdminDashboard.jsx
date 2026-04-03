@@ -2670,7 +2670,7 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Ranking GE"
             subtitle="Faixa etária de 14 a 17 anos"
-            icon="🥈"
+            icon="🏅"
             open={mostrarRankingGE}
             onToggle={() => setMostrarRankingGE(!mostrarRankingGE)}
             hidden={!menuVisivel("ranking ge 14 17 faixa etária")}
@@ -2713,7 +2713,7 @@ function AdminDashboard({ setUser }) {
           <SectionCard
             title="Ranking Líderes"
             subtitle="Grupo especial definido por marcação manual"
-            icon="⭐"
+            icon="🏅"
             open={mostrarRankingLideres}
             onToggle={() => setMostrarRankingLideres(!mostrarRankingLideres)}
             hidden={!menuVisivel("ranking líderes lideres grupo especial liderança")}

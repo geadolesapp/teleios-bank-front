@@ -374,20 +374,20 @@ function Dashboard({ user, setUser }) {
         <div className="header">
           <div className="user-info">
             <div
-              className="avatar-upload"
+              className={`avatar-upload ${dadosUsuario?.is_lider ? "avatar-upload-lider" : ""}`}
               onClick={abrirSeletorFoto}
               title="Clique para alterar a foto"
             >
               <img
                 src={obterUrlAvatar(dadosUsuario?.foto)}
                 alt="avatar"
-                className="avatar"
+                className={`avatar ${dadosUsuario?.is_lider ? "avatar-lider" : ""}`}
               />
-
+        
               <div className="avatar-overlay">
                 <span>{enviandoFoto ? "Enviando..." : "Editar"}</span>
               </div>
-
+        
               <input
                 ref={inputFotoRef}
                 type="file"
@@ -396,20 +396,28 @@ function Dashboard({ user, setUser }) {
                 onChange={handleSelecionarFoto}
               />
             </div>
-
+        
             <div>
               <span className="user-name">
                 Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
               </span>
-              <div style={{ color: "#6ecbff", fontSize: 13, marginTop: 4 }}>
-                {nivelAtual}
+        
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                <div style={{ color: "#6ecbff", fontSize: 13 }}>
+                  {nivelAtual}
+                </div>
+        
+                {dadosUsuario?.is_lider && (
+                  <span className="lider-badge">LÍDER</span>
+                )}
               </div>
-              <div style={{ color: "#9fb3c8", fontSize: 13 }}>
+        
+              <div style={{ color: "#9fb3c8", fontSize: 13, marginTop: 4 }}>
                 Toque na foto para alterar
               </div>
             </div>
           </div>
-
+        
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button
               className="notification-btn"
@@ -417,18 +425,15 @@ function Dashboard({ user, setUser }) {
             >
               🔔
               {notificacoesNaoLidas > 0 && (
-                <span className="notification-badge">
-                  {notificacoesNaoLidas}
-                </span>
+                <span className="notification-badge">{notificacoesNaoLidas}</span>
               )}
             </button>
-
+        
             <button className="logout-btn" onClick={handleLogout}>
               Sair
             </button>
           </div>
         </div>
-
         {mostrarMensagens && (
           <div className="main-card" style={{ marginTop: 16 }}>
             <div

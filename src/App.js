@@ -64,7 +64,7 @@ function App() {
     carregarTudo();
   }, []);
 
-  if (loading) {
+  if (carregando) {
     return (
       <div className="teleios-loading-screen">
         <div className="teleios-loading-box">

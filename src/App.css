@@ -336,8 +336,8 @@ select.input {
 
 /* AVATAR */
 .avatar {
-  width: 45px;
-  height: 45px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   border: 2px solid #fff;
   object-fit: cover;

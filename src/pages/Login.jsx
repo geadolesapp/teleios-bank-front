@@ -18,6 +18,17 @@ function detectarPlataforma() {
   return "desktop";
 }
 
+async function limparSessaoAntiga() {
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+  } catch (error) {
+    console.error("Erro ao limpar storage local:", error);
+  }
+}
+
 function Login({ setUser, layoutConfig }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -30,6 +41,10 @@ function Login({ setUser, layoutConfig }) {
   const logoUrl = useMemo(() => {
     if (!layoutConfig?.logo_url) {
       return `${process.env.PUBLIC_URL}/LogoTeleiosBank.png`;
+    }
+
+    if (/^https?:\/\//i.test(layoutConfig.logo_url)) {
+      return layoutConfig.logo_url;
     }
 
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
@@ -75,8 +90,10 @@ function Login({ setUser, layoutConfig }) {
     setLoading(true);
 
     try {
+      await limparSessaoAntiga();
+
       const response = await api.post("/auth/login", {
-        email,
+        email: email.trim(),
         senha,
       });
 

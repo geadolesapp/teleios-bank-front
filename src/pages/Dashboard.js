@@ -92,14 +92,7 @@ function Dashboard({ user, setUser }) {
 
   async function carregarDashboard() {
     try {
-      const [
-        usuarioResponse,
-        extratoResponse,
-        rankingResponse,
-        mensagensResponse,
-        popupResponse,
-        layoutResponse,
-      ] = await Promise.all([
+      const resultados = await Promise.allSettled([
         api.get("/auth/me"),
         api.get("/user/extrato"),
         api.get("/user/ranking"),
@@ -107,23 +100,83 @@ function Dashboard({ user, setUser }) {
         api.get("/user/messages/popup"),
         api.get("/layout/public"),
       ]);
-
-      setDadosUsuario(usuarioResponse.data);
-      setExtrato(extratoResponse.data);
-      setGrupoRanking(rankingResponse.data?.grupo || "");
-      setRanking(rankingResponse.data?.ranking || []);
-      setMensagens(mensagensResponse.data);
-      setMensagemPopup(popupResponse.data);
-      setNomesNiveis(
-        Array.isArray(layoutResponse.data?.level_names) &&
-          layoutResponse.data.level_names.length === 7
-          ? layoutResponse.data.level_names
-          : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
-      );
-      setCoinsPerLevel(Number(layoutResponse.data?.coins_per_level) || 500);
-      setCoinLogoUrl(layoutResponse.data?.coin_logo_url || "");
+  
+      const [
+        usuarioResult,
+        extratoResult,
+        rankingResult,
+        mensagensResult,
+        popupResult,
+        layoutResult,
+      ] = resultados;
+  
+      if (usuarioResult.status === "fulfilled") {
+        setDadosUsuario(usuarioResult.value.data);
+      } else {
+        console.error("Erro ao carregar /auth/me:", usuarioResult.reason);
+      }
+  
+      if (extratoResult.status === "fulfilled") {
+        setExtrato(extratoResult.value.data || []);
+      } else {
+        console.error("Erro ao carregar /user/extrato:", extratoResult.reason);
+        setExtrato([]);
+      }
+  
+      if (rankingResult.status === "fulfilled") {
+        setGrupoRanking(rankingResult.value.data?.grupo || "");
+        setRanking(rankingResult.value.data?.ranking || []);
+      } else {
+        console.error("Erro ao carregar /user/ranking:", rankingResult.reason);
+        setGrupoRanking("");
+        setRanking([]);
+      }
+  
+      if (mensagensResult.status === "fulfilled") {
+        setMensagens(mensagensResult.value.data || []);
+      } else {
+        console.error("Erro ao carregar /user/messages:", mensagensResult.reason);
+        setMensagens([]);
+      }
+  
+      if (popupResult.status === "fulfilled") {
+        setMensagemPopup(popupResult.value.data || null);
+      } else {
+        console.error(
+          "Erro ao carregar /user/messages/popup:",
+          popupResult.reason,
+        );
+        setMensagemPopup(null);
+      }
+  
+      if (layoutResult.status === "fulfilled") {
+        const layoutData = layoutResult.value.data || {};
+  
+        setNomesNiveis(
+          Array.isArray(layoutData.level_names) &&
+            layoutData.level_names.length === 7
+            ? layoutData.level_names
+            : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
+        );
+  
+        setCoinsPerLevel(Number(layoutData.coins_per_level) || 500);
+        setCoinLogoUrl(layoutData.coin_logo_url || "");
+      } else {
+        console.error("Erro ao carregar /layout/public:", layoutResult.reason);
+        setNomesNiveis([
+          "Nível 1",
+          "Pro",
+          "Elite",
+          "Legend",
+          "Master",
+          "Supreme",
+          "Omega",
+        ]);
+        setCoinsPerLevel(500);
+        setCoinLogoUrl("");
+      }
     } catch (error) {
-      console.error("Erro ao carregar dashboard:", error);
+      console.error("Erro inesperado ao carregar dashboard:", error);
     } finally {
       setLoading(false);
     }

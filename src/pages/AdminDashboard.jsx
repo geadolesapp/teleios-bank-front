@@ -47,9 +47,7 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
   const [mapZoom, setMapZoom] = useState(13);
 
-  const [layoutCloud1Arquivo, setLayoutCloud1Arquivo] = useState(null);
-  const [layoutCloud2Arquivo, setLayoutCloud2Arquivo] = useState(null);
-  const [layoutCloud3Arquivo, setLayoutCloud3Arquivo] = useState(null);
+  
 
   async function buscarEndereco(lat, lng) {
     try {
@@ -374,6 +372,10 @@ function AdminDashboard({ setUser }) {
   const [processandoResetSaldo, setProcessandoResetSaldo] = useState(false);
   const [processandoResetExtrato, setProcessandoResetExtrato] = useState(false);
   const [processandoResetGeral, setProcessandoResetGeral] = useState(false);
+
+  const [layoutCloud1Arquivo, setLayoutCloud1Arquivo] = useState(null);
+  const [layoutCloud2Arquivo, setLayoutCloud2Arquivo] = useState(null);
+  const [layoutCloud3Arquivo, setLayoutCloud3Arquivo] = useState(null);
 
   const [layoutNome, setLayoutNome] = useState("");
   const [layoutCorPrimaria, setLayoutCorPrimaria] = useState("#00c2cb");

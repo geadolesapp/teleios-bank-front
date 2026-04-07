@@ -377,7 +377,7 @@ function Dashboard({ user, setUser }) {
 
   function obterUrlAvatar(foto) {
     if (!foto) {
-      return "https://i.pravatar.cc/100";
+      return `${process.env.PUBLIC_URL}/avatar-padrao.png`;
     }
 
     if (/^https?:\/\//i.test(foto)) {

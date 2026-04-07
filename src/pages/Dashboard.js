@@ -456,14 +456,14 @@ function Dashboard({ user, setUser }) {
               )}
             </div>
           
-            <div>
+            <div className="user-text-block">
               <span className="user-name">
                 Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
               </span>
-          
+            
               <div className="user-header-level">{nivelAtual}</div>
-          
-              <div style={{ color: "#9fb3c8", fontSize: 13, marginTop: 4 }}>
+            
+              <div className="user-photo-hint">
                 Toque na foto para alterar
               </div>
             </div>

@@ -113,6 +113,12 @@ function App() {
     carregarTudo();
   }, []);
 
+  useEffect(() => {
+    if (layoutConfig) {
+      aplicarTema(layoutConfig);
+    }
+  }, [layoutConfig]);
+
   if (carregando) {
     return (
       <div className="teleios-loading-screen">

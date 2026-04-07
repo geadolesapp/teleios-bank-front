@@ -1628,3 +1628,21 @@ select.input {
   margin-top: 6px;
   min-width: 64px;
 }
+
+.user-header-level {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #6ecbff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+  

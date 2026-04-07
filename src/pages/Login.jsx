@@ -29,6 +29,12 @@ async function limparSessaoAntiga() {
   }
 }
 
+function montarUrlArquivo(urlArquivo) {
+  if (!urlArquivo) return "";
+  if (/^https?:\/\//i.test(urlArquivo)) return urlArquivo;
+  return `${api.defaults.baseURL.replace("/api", "")}${urlArquivo}`;
+}
+
 function Login({ setUser, layoutConfig }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -42,39 +48,42 @@ function Login({ setUser, layoutConfig }) {
     if (!layoutConfig?.logo_url) {
       return `${process.env.PUBLIC_URL}/LogoTeleiosBank.png`;
     }
-
-    if (/^https?:\/\//i.test(layoutConfig.logo_url)) {
-      return layoutConfig.logo_url;
-    }
-
-    return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
+    return montarUrlArquivo(layoutConfig.logo_url);
   }, [layoutConfig]);
 
   const loginBackgroundUrl = useMemo(() => {
-    if (!layoutConfig?.login_background_url) {
-      return "";
-    }
-
-    if (/^https?:\/\//i.test(layoutConfig.login_background_url)) {
-      return layoutConfig.login_background_url;
-    }
-
-    return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.login_background_url}`;
+    return montarUrlArquivo(layoutConfig?.login_background_url || "");
   }, [layoutConfig]);
 
-  const mostrarNuvens = layoutConfig?.show_clouds !== false && !loginBackgroundUrl;
+  const cloud1Url = useMemo(() => {
+    return (
+      montarUrlArquivo(layoutConfig?.login_cloud_1_url || "") ||
+      `${process.env.PUBLIC_URL}/nuvem-1.png`
+    );
+  }, [layoutConfig]);
 
-  const nuvem1 = `${process.env.PUBLIC_URL}/nuvem-1.png`;
-  const nuvem2 = `${process.env.PUBLIC_URL}/nuvem--2.png`;
-  const nuvem3 = `${process.env.PUBLIC_URL}/nuvem--3.png`;
+  const cloud2Url = useMemo(() => {
+    return (
+      montarUrlArquivo(layoutConfig?.login_cloud_2_url || "") ||
+      `${process.env.PUBLIC_URL}/nuvem--2.png`
+    );
+  }, [layoutConfig]);
+
+  const cloud3Url = useMemo(() => {
+    return (
+      montarUrlArquivo(layoutConfig?.login_cloud_3_url || "") ||
+      `${process.env.PUBLIC_URL}/nuvem--3.png`
+    );
+  }, [layoutConfig]);
+
+  const mostrarNuvens =
+    layoutConfig?.show_clouds !== false && !loginBackgroundUrl;
 
   useEffect(() => {
     const plataformaDetectada = detectarPlataforma();
     setPlataforma(plataformaDetectada);
 
-    if (plataformaDetectada === "desktop") {
-      return;
-    }
+    if (plataformaDetectada === "desktop") return;
 
     const chave =
       plataformaDetectada === "android"
@@ -127,7 +136,7 @@ function Login({ setUser, layoutConfig }) {
 
   return (
     <div
-      className="container app-theme-bg login-page"
+      className={`container app-theme-bg login-page ${loginBackgroundUrl ? "has-custom-login-bg" : ""}`}
       style={
         loginBackgroundUrl
           ? {
@@ -144,15 +153,15 @@ function Login({ setUser, layoutConfig }) {
         <div className="login-clouds">
           <div
             className="login-cloud login-cloud-1"
-            style={{ backgroundImage: `url(${nuvem1})` }}
+            style={{ backgroundImage: `url(${cloud1Url})` }}
           />
           <div
             className="login-cloud login-cloud-2"
-            style={{ backgroundImage: `url(${nuvem2})` }}
+            style={{ backgroundImage: `url(${cloud2Url})` }}
           />
           <div
             className="login-cloud login-cloud-3"
-            style={{ backgroundImage: `url(${nuvem3})` }}
+            style={{ backgroundImage: `url(${cloud3Url})` }}
           />
         </div>
       )}
@@ -209,12 +218,10 @@ function Login({ setUser, layoutConfig }) {
         <div className="scanner-overlay">
           <div className="install-popup">
             <h3>Instale o Teleios Bank</h3>
-
             <p className="install-popup-text">
               Para acessar mais rápido, você pode instalar o app ou adicionar um
               atalho à tela inicial.
             </p>
-
             <div className="install-popup-box">
               <strong>Android, Chrome</strong>
               <p>
@@ -222,7 +229,6 @@ function Login({ setUser, layoutConfig }) {
                 <b>Adicionar à tela inicial</b>.
               </p>
             </div>
-
             <button className="action-btn" onClick={fecharPopupInstalacao}>
               Entendi
             </button>
@@ -234,11 +240,9 @@ function Login({ setUser, layoutConfig }) {
         <div className="scanner-overlay">
           <div className="install-popup">
             <h3>Adicione o Teleios Bank à tela inicial</h3>
-
             <p className="install-popup-text">
               Para acessar mais rápido no iPhone, salve o app na tela inicial.
             </p>
-
             <div className="install-popup-box">
               <strong>iPhone, Safari</strong>
               <p>
@@ -246,7 +250,6 @@ function Login({ setUser, layoutConfig }) {
                 <b>Adicionar à Tela de Início</b>.
               </p>
             </div>
-
             <button className="action-btn" onClick={fecharPopupInstalacao}>
               Entendi
             </button>

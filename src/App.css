@@ -1495,12 +1495,7 @@ select.input {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
-.user-photo-hint {
-  color: #717478;
-  font-size: 13px;
-  margin-top: 6px;
-  line-height: 1.2;
-}
+
 
 /* RESPONSIVO */
 @media (max-width: 768px) {

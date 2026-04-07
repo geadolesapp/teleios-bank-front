@@ -395,6 +395,7 @@ function AdminDashboard({ setUser }) {
     "Supreme",
     "Omega",
   ]);
+  const [mostrarEditarNiveis, setMostrarEditarNiveis] = useState(false);
   const [salvandoLayout, setSalvandoLayout] = useState(false);
 
   const [mensagensAdmin, setMensagensAdmin] = useState([]);
@@ -544,6 +545,14 @@ function AdminDashboard({ setUser }) {
 
   function formatarDataExibicao(valor) {
     return converterIsoParaDataBR(valor) || "-";
+  }
+
+  function atualizarNomeNivel(index, valor) {
+    setLayoutNomesNiveis((prev) => {
+      const proximo = [...prev];
+      proximo[index] = valor;
+      return proximo;
+    });
   }
 
   function formatarNomeRanking(nome) {
@@ -2286,6 +2295,45 @@ function AdminDashboard({ setUser }) {
                   onChange={(e) => setLayoutCoinsPorNivel(e.target.value)}
                 />
               </div>
+              
+              <div style={{ width: "100%" }}>
+                <button
+                  type="button"
+                  className="action-btn secondary"
+                  onClick={() => setMostrarEditarNiveis((prev) => !prev)}
+                >
+                  {mostrarEditarNiveis ? "Ocultar níveis" : "Editar nomes dos níveis"}
+                </button>
+              </div>
+              
+              {mostrarEditarNiveis && (
+                <div
+                  style={{
+                    width: "100%",
+                    padding: 14,
+                    borderRadius: 14,
+                    background: "rgba(255, 255, 255, 0.04)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                  }}
+                >
+                  <div style={{ marginBottom: 12, color: "#dbe7f1", fontWeight: 700 }}>
+                    Editar nomes dos níveis
+                  </div>
+              
+                  {layoutNomesNiveis.map((nivel, index) => (
+                    <div key={index} style={{ width: "100%" }}>
+                      <label className="color-label">Nível {index + 1}</label>
+                      <input
+                        className="input"
+                        type="text"
+                        placeholder={`Nome do nível ${index + 1}`}
+                        value={nivel}
+                        onChange={(e) => atualizarNomeNivel(index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div style={{ width: "100%" }}>
                 <label className="color-label">Logo da tela de login</label>

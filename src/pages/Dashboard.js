@@ -463,9 +463,7 @@ function Dashboard({ user, setUser }) {
             
               <div className="user-header-level">{nivelAtual}</div>
             
-              <div className="user-photo-hint">
-                Toque na foto para alterar
-              </div>
+              
             </div>
           </div>
         

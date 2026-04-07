@@ -7,22 +7,38 @@
 }
 
 /* RESET GLOBAL */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  font-family: var(--fonte-app) !important;
 }
 
-body,
-input,
-button,
-select,
-textarea {
-  font-family: var(--fonte-app);
-}
-
+html,
 body {
   margin: 0;
   background: var(--bg-base);
   color: #fff;
+  font-family: var(--fonte-app) !important;
+}
+
+input,
+button,
+select,
+textarea,
+option,
+label,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+div,
+a {
+  font-family: var(--fonte-app) !important;
 }
 
 /* FUNDO GLOBAL DA APLICAÇÃO */

@@ -224,7 +224,11 @@ body.theme-clouds-off .login-page.app-theme-bg {
 
 .logo {
   width: 200px;
-  margin-bottom: 15px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 15px;
+  object-fit: contain;
 }
 
 .title {
@@ -1704,3 +1708,12 @@ select.input {
   margin-top: 6px;
   min-width: 64px;
 }
+
+.login-page.has-custom-login-bg,
+.login-page.has-custom-login-bg.app-theme-bg {
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+}
+

@@ -359,11 +359,21 @@ select.input {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.user-text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .user-name {
-  font-weight: bold;
+  display: block;
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1.15;
 }
 
 /* AVATAR */
@@ -1471,20 +1481,34 @@ select.input {
 }
 
 .user-header-level {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  align-self: center;
   margin-top: 4px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #6ecbff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  text-align: center;
+  -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.95);
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.95),
+    1px -1px 0 rgba(0, 0, 0, 0.95),
+    -1px 1px 0 rgba(0, 0, 0, 0.95),
+    1px 1px 0 rgba(0, 0, 0, 0.95),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.user-photo-hint {
+  margin-top: 8px;
+  color: #d7e6f5;
   font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  border: 1px solid rgba(0, 0, 0, 0.55);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  line-height: 1.2;
 }
 
 /* RESPONSIVO */

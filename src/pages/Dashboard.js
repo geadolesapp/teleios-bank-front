@@ -461,9 +461,7 @@ function Dashboard({ user, setUser }) {
                 Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
               </span>
           
-              <div style={{ color: "#6ecbff", fontSize: 13, marginTop: 4 }}>
-                {nivelAtual}
-              </div>
+              <div className="user-header-level">{nivelAtual}</div>
           
               <div style={{ color: "#9fb3c8", fontSize: 13, marginTop: 4 }}>
                 Toque na foto para alterar

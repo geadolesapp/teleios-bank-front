@@ -987,30 +987,63 @@ select.input {
   }
 
   .admin-menu-card-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-  .admin-menu-card-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
+.admin-menu-card-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
 
-  .admin-menu-toggle,
-  .section-inline-btn {
-    min-width: 110px;
-  }
+.admin-menu-icon {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+  align-self: center;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 194, 203, 0.22),
+    rgba(15, 42, 58, 0.68)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  .admin-menu-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    font-size: 24px;
-  }
+.admin-menu-texts {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  .admin-menu-texts h3 {
-    font-size: 18px;
-  }
+.admin-menu-texts h3 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  line-height: 1.15;
+  color: #fff;
+}
+
+.admin-menu-texts p {
+  margin: 0;
+  color: #9fb3c8;
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .footer-brand {

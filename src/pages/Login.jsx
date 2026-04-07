@@ -50,6 +50,20 @@ function Login({ setUser, layoutConfig }) {
     return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.logo_url}`;
   }, [layoutConfig]);
 
+  const loginBackgroundUrl = useMemo(() => {
+    if (!layoutConfig?.login_background_url) {
+      return "";
+    }
+
+    if (/^https?:\/\//i.test(layoutConfig.login_background_url)) {
+      return layoutConfig.login_background_url;
+    }
+
+    return `${api.defaults.baseURL.replace("/api", "")}${layoutConfig.login_background_url}`;
+  }, [layoutConfig]);
+
+  const mostrarNuvens = layoutConfig?.show_clouds !== false && !loginBackgroundUrl;
+
   const nuvem1 = `${process.env.PUBLIC_URL}/nuvem-1.png`;
   const nuvem2 = `${process.env.PUBLIC_URL}/nuvem--2.png`;
   const nuvem3 = `${process.env.PUBLIC_URL}/nuvem--3.png`;
@@ -112,21 +126,36 @@ function Login({ setUser, layoutConfig }) {
   }
 
   return (
-    <div className="container app-theme-bg login-page">
-      <div className="login-clouds">
-        <div
-          className="login-cloud login-cloud-1"
-          style={{ backgroundImage: `url(${nuvem1})` }}
-        />
-        <div
-          className="login-cloud login-cloud-2"
-          style={{ backgroundImage: `url(${nuvem2})` }}
-        />
-        <div
-          className="login-cloud login-cloud-3"
-          style={{ backgroundImage: `url(${nuvem3})` }}
-        />
-      </div>
+    <div
+      className="container app-theme-bg login-page"
+      style={
+        loginBackgroundUrl
+          ? {
+              backgroundImage: `linear-gradient(rgba(11, 29, 42, 0.38), rgba(11, 29, 42, 0.52)), url(${loginBackgroundUrl})`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+              backgroundAttachment: "fixed",
+            }
+          : undefined
+      }
+    >
+      {mostrarNuvens && (
+        <div className="login-clouds">
+          <div
+            className="login-cloud login-cloud-1"
+            style={{ backgroundImage: `url(${nuvem1})` }}
+          />
+          <div
+            className="login-cloud login-cloud-2"
+            style={{ backgroundImage: `url(${nuvem2})` }}
+          />
+          <div
+            className="login-cloud login-cloud-3"
+            style={{ backgroundImage: `url(${nuvem3})` }}
+          />
+        </div>
+      )}
 
       <div className="page-shell login-shell">
         <div className="login-content">

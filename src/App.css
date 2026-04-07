@@ -359,21 +359,21 @@ select.input {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .user-text-block {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  min-width: 0;
 }
 
 .user-name {
   display: block;
   font-weight: 800;
   font-size: 17px;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 /* AVATAR */
@@ -1481,33 +1481,24 @@ select.input {
 }
 
 .user-header-level {
-  display: block;
-  align-self: center;
-  margin-top: 4px;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  color: #6ecbff;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.3px;
-  text-align: center;
-  -webkit-text-stroke: 0.8px rgba(0, 0, 0, 0.95);
-  text-shadow:
-    -1px -1px 0 rgba(0, 0, 0, 0.95),
-    1px -1px 0 rgba(0, 0, 0, 0.95),
-    -1px 1px 0 rgba(0, 0, 0, 0.95),
-    1px 1px 0 rgba(0, 0, 0, 0.95),
-    0 2px 4px rgba(0, 0, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f2a3a, #00c2cb);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
 .user-photo-hint {
-  margin-top: 8px;
-  color: #d7e6f5;
+  color: #9fb3c8;
   font-size: 13px;
+  margin-top: 6px;
   line-height: 1.2;
 }
 

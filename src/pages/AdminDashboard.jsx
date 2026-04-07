@@ -940,9 +940,9 @@ function AdminDashboard({ setUser }) {
         alert("Informe uma quantidade válida de moedas por nível");
         return;
       }
-
+  
       setSalvandoLayout(true);
-
+  
       await api.put("/layout", {
         app_name: layoutNome,
         primary_color: layoutCorPrimaria,
@@ -953,47 +953,80 @@ function AdminDashboard({ setUser }) {
         coins_per_level: Number(layoutCoinsPorNivel) || 500,
         level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
-
+  
       if (layoutLogoArquivo) {
         const formData = new FormData();
         formData.append("logo", layoutLogoArquivo);
-
+  
         await api.post("/layout/logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-
+  
       if (layoutCoinLogoArquivo) {
         const formData = new FormData();
         formData.append("coin_logo", layoutCoinLogoArquivo);
-
+  
         await api.post("/layout/coin-logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-
+  
       if (layoutLoginBackgroundArquivo) {
         const formData = new FormData();
         formData.append("login_background", layoutLoginBackgroundArquivo);
-
+  
         await api.post("/layout/login-background", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-
+  
+      if (layoutCloud1Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud1Arquivo);
+  
+        await api.post("/layout/login-cloud/1", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+  
+      if (layoutCloud2Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud2Arquivo);
+  
+        await api.post("/layout/login-cloud/2", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+  
+      if (layoutCloud3Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud3Arquivo);
+  
+        await api.post("/layout/login-cloud/3", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+  
       setLayoutLogoArquivo(null);
       setLayoutCoinLogoArquivo(null);
       setLayoutLoginBackgroundArquivo(null);
       setLayoutCloud1Arquivo(null);
       setLayoutCloud2Arquivo(null);
       setLayoutCloud3Arquivo(null);
-
+  
       await carregarLayout();
       alert("Layout atualizado com sucesso");
     } catch (error) {
@@ -1002,6 +1035,7 @@ function AdminDashboard({ setUser }) {
     } finally {
       setSalvandoLayout(false);
     }
+  }
 
           if (layoutCloud1Arquivo) {
         const formData = new FormData();

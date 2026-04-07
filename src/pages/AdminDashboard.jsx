@@ -47,8 +47,6 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
   const [mapZoom, setMapZoom] = useState(13);
 
-  
-
   async function buscarEndereco(lat, lng) {
     try {
       setCarregandoEndereco(true);
@@ -911,28 +909,28 @@ function AdminDashboard({ setUser }) {
   }
 
   async function removerNuvemLogin(indice) {
-  const confirmar = window.confirm(
-    `Deseja realmente remover a nuvem ${indice} do login?`,
-  );
+    const confirmar = window.confirm(
+      `Deseja realmente remover a nuvem ${indice} do login?`,
+    );
 
-  if (!confirmar) return;
+    if (!confirmar) return;
 
-  try {
-    await api.delete(`/layout/login-cloud/${indice}`);
+    try {
+      await api.delete(`/layout/login-cloud/${indice}`);
 
-    if (indice === 1) setLayoutCloud1Arquivo(null);
-    if (indice === 2) setLayoutCloud2Arquivo(null);
-    if (indice === 3) setLayoutCloud3Arquivo(null);
+      if (indice === 1) setLayoutCloud1Arquivo(null);
+      if (indice === 2) setLayoutCloud2Arquivo(null);
+      if (indice === 3) setLayoutCloud3Arquivo(null);
 
-    await carregarLayout();
-    alert(`Nuvem ${indice} removida com sucesso`);
-  } catch (error) {
-    const mensagem =
-      error.response?.data?.message ||
-      `Erro ao remover a nuvem ${indice} do login`;
-    alert(mensagem);
+      await carregarLayout();
+      alert(`Nuvem ${indice} removida com sucesso`);
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        `Erro ao remover a nuvem ${indice} do login`;
+      alert(mensagem);
+    }
   }
-}
 
   async function salvarLayout() {
     try {
@@ -940,9 +938,9 @@ function AdminDashboard({ setUser }) {
         alert("Informe uma quantidade válida de moedas por nível");
         return;
       }
-  
+
       setSalvandoLayout(true);
-  
+
       await api.put("/layout", {
         app_name: layoutNome,
         primary_color: layoutCorPrimaria,
@@ -953,80 +951,80 @@ function AdminDashboard({ setUser }) {
         coins_per_level: Number(layoutCoinsPorNivel) || 500,
         level_names: layoutNomesNiveis.map((item) => item.trim() || "Nível"),
       });
-  
+
       if (layoutLogoArquivo) {
         const formData = new FormData();
         formData.append("logo", layoutLogoArquivo);
-  
+
         await api.post("/layout/logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutCoinLogoArquivo) {
         const formData = new FormData();
         formData.append("coin_logo", layoutCoinLogoArquivo);
-  
+
         await api.post("/layout/coin-logo", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutLoginBackgroundArquivo) {
         const formData = new FormData();
         formData.append("login_background", layoutLoginBackgroundArquivo);
-  
+
         await api.post("/layout/login-background", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutCloud1Arquivo) {
         const formData = new FormData();
         formData.append("login_cloud", layoutCloud1Arquivo);
-  
+
         await api.post("/layout/login-cloud/1", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutCloud2Arquivo) {
         const formData = new FormData();
         formData.append("login_cloud", layoutCloud2Arquivo);
-  
+
         await api.post("/layout/login-cloud/2", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       if (layoutCloud3Arquivo) {
         const formData = new FormData();
         formData.append("login_cloud", layoutCloud3Arquivo);
-  
+
         await api.post("/layout/login-cloud/3", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       }
-  
+
       setLayoutLogoArquivo(null);
       setLayoutCoinLogoArquivo(null);
       setLayoutLoginBackgroundArquivo(null);
       setLayoutCloud1Arquivo(null);
       setLayoutCloud2Arquivo(null);
       setLayoutCloud3Arquivo(null);
-  
+
       await carregarLayout();
       alert("Layout atualizado com sucesso");
     } catch (error) {
@@ -1035,40 +1033,6 @@ function AdminDashboard({ setUser }) {
     } finally {
       setSalvandoLayout(false);
     }
-  }
-
-          if (layoutCloud1Arquivo) {
-        const formData = new FormData();
-        formData.append("login_cloud", layoutCloud1Arquivo);
-
-        await api.post("/layout/login-cloud/1", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-
-      if (layoutCloud2Arquivo) {
-        const formData = new FormData();
-        formData.append("login_cloud", layoutCloud2Arquivo);
-
-        await api.post("/layout/login-cloud/2", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-
-      if (layoutCloud3Arquivo) {
-        const formData = new FormData();
-        formData.append("login_cloud", layoutCloud3Arquivo);
-
-        await api.post("/layout/login-cloud/3", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
   }
 
   async function importarUsuariosPorArquivo() {
@@ -2188,7 +2152,7 @@ function AdminDashboard({ setUser }) {
               >
                 {enviandoMensagem ? "Enviando..." : "Enviar mensagem"}
               </button>
-              
+
               <button
                 type="button"
                 className="action-btn secondary"
@@ -2358,7 +2322,18 @@ function AdminDashboard({ setUser }) {
                   }
                 />
 
-                              <div style={{ width: "100%" }}>
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="action-btn secondary"
+                    onClick={removerImagemLogin}
+                  >
+                    Remover imagem do login
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ width: "100%" }}>
                 <label className="color-label">Nuvem 1 do login</label>
                 <input
                   className="input"
@@ -2420,17 +2395,6 @@ function AdminDashboard({ setUser }) {
                     onClick={() => removerNuvemLogin(3)}
                   >
                     Remover nuvem 3
-                  </button>
-                </div>
-              </div>
-
-                <div style={{ marginTop: 10 }}>
-                  <button
-                    type="button"
-                    className="action-btn secondary"
-                    onClick={removerImagemLogin}
-                  >
-                    Remover imagem do login
                   </button>
                 </div>
               </div>

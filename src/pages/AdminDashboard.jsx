@@ -47,6 +47,10 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
   const [mapZoom, setMapZoom] = useState(13);
 
+  const [layoutCloud1Arquivo, setLayoutCloud1Arquivo] = useState(null);
+  const [layoutCloud2Arquivo, setLayoutCloud2Arquivo] = useState(null);
+  const [layoutCloud3Arquivo, setLayoutCloud3Arquivo] = useState(null);
+
   async function buscarEndereco(lat, lng) {
     try {
       setCarregandoEndereco(true);
@@ -904,6 +908,30 @@ function AdminDashboard({ setUser }) {
     }
   }
 
+  async function removerNuvemLogin(indice) {
+  const confirmar = window.confirm(
+    `Deseja realmente remover a nuvem ${indice} do login?`,
+  );
+
+  if (!confirmar) return;
+
+  try {
+    await api.delete(`/layout/login-cloud/${indice}`);
+
+    if (indice === 1) setLayoutCloud1Arquivo(null);
+    if (indice === 2) setLayoutCloud2Arquivo(null);
+    if (indice === 3) setLayoutCloud3Arquivo(null);
+
+    await carregarLayout();
+    alert(`Nuvem ${indice} removida com sucesso`);
+  } catch (error) {
+    const mensagem =
+      error.response?.data?.message ||
+      `Erro ao remover a nuvem ${indice} do login`;
+    alert(mensagem);
+  }
+}
+
   async function salvarLayout() {
     try {
       if (!Number(layoutCoinsPorNivel) || Number(layoutCoinsPorNivel) <= 0) {
@@ -960,6 +988,9 @@ function AdminDashboard({ setUser }) {
       setLayoutLogoArquivo(null);
       setLayoutCoinLogoArquivo(null);
       setLayoutLoginBackgroundArquivo(null);
+      setLayoutCloud1Arquivo(null);
+      setLayoutCloud2Arquivo(null);
+      setLayoutCloud3Arquivo(null);
 
       await carregarLayout();
       alert("Layout atualizado com sucesso");
@@ -969,6 +1000,39 @@ function AdminDashboard({ setUser }) {
     } finally {
       setSalvandoLayout(false);
     }
+
+          if (layoutCloud1Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud1Arquivo);
+
+        await api.post("/layout/login-cloud/1", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      if (layoutCloud2Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud2Arquivo);
+
+        await api.post("/layout/login-cloud/2", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      if (layoutCloud3Arquivo) {
+        const formData = new FormData();
+        formData.append("login_cloud", layoutCloud3Arquivo);
+
+        await api.post("/layout/login-cloud/3", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
   }
 
   async function importarUsuariosPorArquivo() {
@@ -2257,6 +2321,72 @@ function AdminDashboard({ setUser }) {
                     setLayoutLoginBackgroundArquivo(e.target.files?.[0] || null)
                   }
                 />
+
+                              <div style={{ width: "100%" }}>
+                <label className="color-label">Nuvem 1 do login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutCloud1Arquivo(e.target.files?.[0] || null)
+                  }
+                />
+
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="action-btn secondary"
+                    onClick={() => removerNuvemLogin(1)}
+                  >
+                    Remover nuvem 1
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Nuvem 2 do login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutCloud2Arquivo(e.target.files?.[0] || null)
+                  }
+                />
+
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="action-btn secondary"
+                    onClick={() => removerNuvemLogin(2)}
+                  >
+                    Remover nuvem 2
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ width: "100%" }}>
+                <label className="color-label">Nuvem 3 do login</label>
+                <input
+                  className="input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(e) =>
+                    setLayoutCloud3Arquivo(e.target.files?.[0] || null)
+                  }
+                />
+
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="action-btn secondary"
+                    onClick={() => removerNuvemLogin(3)}
+                  >
+                    Remover nuvem 3
+                  </button>
+                </div>
+              </div>
 
                 <div style={{ marginTop: 10 }}>
                   <button

@@ -1,5 +1,5 @@
-const APP_CACHE_VERSION = "teleios-bank-v4";
-const APP_PREFIX = "/teleios-bank-front";
+const APP_CACHE_VERSION = "teleios-bank-v5";
+const APP_PREFIX = "";
 
 const urlsToCache = [
   `${APP_PREFIX}/`,
@@ -62,11 +62,11 @@ self.addEventListener("fetch", (event) => {
         .then((response) => {
           const responseClone = response.clone();
           caches.open(APP_CACHE_VERSION).then((cache) => {
-            cache.put(`${APP_PREFIX}/index.html`, responseClone);
+            cache.put("/index.html", responseClone);
           });
           return response;
         })
-        .catch(() => caches.match(`${APP_PREFIX}/index.html`)),
+        .catch(() => caches.match("/index.html")),
     );
     return;
   }
@@ -78,11 +78,7 @@ self.addEventListener("fetch", (event) => {
       }
 
       return fetch(request).then((networkResponse) => {
-        if (
-          networkResponse &&
-          networkResponse.status === 200 &&
-          url.pathname.startsWith(APP_PREFIX)
-        ) {
+        if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(APP_CACHE_VERSION).then((cache) => {
             cache.put(request, responseClone);

@@ -5,7 +5,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PrimeiroAcesso from "./pages/PrimeiroAcesso";
 import api from "./services/api";
 
-const FRONT_VERSION = "teleios-front-v5";
+const FRONT_VERSION = "teleios-front-v6";
 
 function aplicarTema(config) {
   const root = document.documentElement;

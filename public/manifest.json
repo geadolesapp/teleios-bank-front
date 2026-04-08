@@ -13,7 +13,8 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/teleios-bank-front/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#0f2a3a",
   "background_color": "#0b1d2a"

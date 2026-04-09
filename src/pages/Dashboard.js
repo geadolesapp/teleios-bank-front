@@ -1,7 +1,7 @@
 import "../App.css";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
-import api from "../services/api";
+import api, { requestWithRetry } from "../services/api";
 import QRCodeScanner from "./QRCodeScanner";
 import Footer from "../components/Footer";
 import moedaTeleios from "../assets/moedaTeleios.png";
@@ -83,6 +83,8 @@ function Dashboard({ user, setUser }) {
   ]);
   const [coinsPerLevel, setCoinsPerLevel] = useState(500);
   const [coinLogoUrl, setCoinLogoUrl] = useState("");
+  const [erroExtrato, setErroExtrato] = useState("");
+  const [erroRanking, setErroRanking] = useState("");
 
   const inputFotoRef = useRef(null);
 
@@ -92,15 +94,36 @@ function Dashboard({ user, setUser }) {
 
   async function carregarDashboard() {
     try {
+      setErroExtrato("");
+      setErroRanking("");
+
       const resultados = await Promise.allSettled([
-        api.get("/auth/me"),
-        api.get("/user/extrato"),
-        api.get("/user/ranking"),
-        api.get("/user/messages"),
-        api.get("/user/messages/popup"),
-        api.get("/layout/public"),
+        requestWithRetry(() => api.get("/auth/me"), {
+          retries: 2,
+          delayMs: 1500,
+        }),
+        requestWithRetry(() => api.get("/user/extrato"), {
+          retries: 2,
+          delayMs: 1500,
+        }),
+        requestWithRetry(() => api.get("/user/ranking"), {
+          retries: 2,
+          delayMs: 1500,
+        }),
+        requestWithRetry(() => api.get("/user/messages"), {
+          retries: 2,
+          delayMs: 1200,
+        }),
+        requestWithRetry(() => api.get("/user/messages/popup"), {
+          retries: 2,
+          delayMs: 1200,
+        }),
+        requestWithRetry(() => api.get("/layout/public"), {
+          retries: 2,
+          delayMs: 1200,
+        }),
       ]);
-  
+
       const [
         usuarioResult,
         extratoResult,
@@ -109,36 +132,34 @@ function Dashboard({ user, setUser }) {
         popupResult,
         layoutResult,
       ] = resultados;
-  
+
       if (usuarioResult.status === "fulfilled") {
         setDadosUsuario(usuarioResult.value.data);
       } else {
         console.error("Erro ao carregar /auth/me:", usuarioResult.reason);
       }
-  
+
       if (extratoResult.status === "fulfilled") {
         setExtrato(extratoResult.value.data || []);
       } else {
         console.error("Erro ao carregar /user/extrato:", extratoResult.reason);
-        setExtrato([]);
+        setErroExtrato("Não foi possível carregar o extrato agora.");
       }
-  
+
       if (rankingResult.status === "fulfilled") {
         setGrupoRanking(rankingResult.value.data?.grupo || "");
         setRanking(rankingResult.value.data?.ranking || []);
       } else {
         console.error("Erro ao carregar /user/ranking:", rankingResult.reason);
-        setGrupoRanking("");
-        setRanking([]);
+        setErroRanking("Não foi possível carregar o ranking agora.");
       }
-  
+
       if (mensagensResult.status === "fulfilled") {
         setMensagens(mensagensResult.value.data || []);
       } else {
         console.error("Erro ao carregar /user/messages:", mensagensResult.reason);
-        setMensagens([]);
       }
-  
+
       if (popupResult.status === "fulfilled") {
         setMensagemPopup(popupResult.value.data || null);
       } else {
@@ -148,17 +169,17 @@ function Dashboard({ user, setUser }) {
         );
         setMensagemPopup(null);
       }
-  
+
       if (layoutResult.status === "fulfilled") {
         const layoutData = layoutResult.value.data || {};
-  
+
         setNomesNiveis(
           Array.isArray(layoutData.level_names) &&
             layoutData.level_names.length === 7
             ? layoutData.level_names
             : ["Nível 1", "Pro", "Elite", "Legend", "Master", "Supreme", "Omega"],
         );
-  
+
         setCoinsPerLevel(Number(layoutData.coins_per_level) || 500);
         setCoinLogoUrl(layoutData.coin_logo_url || "");
       } else {
@@ -221,11 +242,18 @@ function Dashboard({ user, setUser }) {
       const formData = new FormData();
       formData.append("foto", croppedBlob, "avatar.png");
 
-      const response = await api.post("/user/foto", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await requestWithRetry(
+        () =>
+          api.post("/user/foto", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }),
+        {
+          retries: 1,
+          delayMs: 1200,
         },
-      });
+      );
 
       setDadosUsuario((prev) => ({
         ...prev,
@@ -254,7 +282,10 @@ function Dashboard({ user, setUser }) {
 
   async function abrirMensagem(msg) {
     try {
-      await api.patch(`/user/messages/${msg._id}/read`);
+      await requestWithRetry(
+        () => api.patch(`/user/messages/${msg._id}/read`),
+        { retries: 1, delayMs: 1000 },
+      );
       await carregarDashboard();
     } catch (error) {
       console.error("Erro ao marcar mensagem como lida:", error);
@@ -263,7 +294,10 @@ function Dashboard({ user, setUser }) {
 
   async function removerMensagem(msg) {
     try {
-      await api.patch(`/user/messages/${msg._id}/hide`);
+      await requestWithRetry(
+        () => api.patch(`/user/messages/${msg._id}/hide`),
+        { retries: 1, delayMs: 1000 },
+      );
       if (mensagemPopup?._id === msg._id) {
         setMensagemPopup(null);
       }
@@ -280,7 +314,10 @@ function Dashboard({ user, setUser }) {
     }
 
     try {
-      await api.patch("/user/messages/hide-all");
+      await requestWithRetry(
+        () => api.patch("/user/messages/hide-all"),
+        { retries: 1, delayMs: 1000 },
+      );
       setMensagemPopup(null);
       await carregarDashboard();
     } catch (error) {
@@ -290,7 +327,10 @@ function Dashboard({ user, setUser }) {
 
   async function naoMostrarNovamente(msg) {
     try {
-      await api.patch(`/user/messages/${msg._id}/hide`);
+      await requestWithRetry(
+        () => api.patch(`/user/messages/${msg._id}/hide`),
+        { retries: 1, delayMs: 1000 },
+      );
       setMensagemPopup(null);
       await carregarDashboard();
     } catch (error) {
@@ -428,20 +468,24 @@ function Dashboard({ user, setUser }) {
           <div className="user-info">
             <div className="avatar-user-block">
               <div
-                className={`avatar-upload ${dadosUsuario?.is_lider ? "avatar-upload-lider" : ""}`}
+                className={`avatar-upload ${
+                  dadosUsuario?.is_lider ? "avatar-upload-lider" : ""
+                }`}
                 onClick={abrirSeletorFoto}
                 title="Clique para alterar a foto"
               >
                 <img
                   src={obterUrlAvatar(dadosUsuario?.foto)}
                   alt="avatar"
-                  className={`avatar ${dadosUsuario?.is_lider ? "avatar-lider" : ""}`}
+                  className={`avatar ${
+                    dadosUsuario?.is_lider ? "avatar-lider" : ""
+                  }`}
                 />
-          
+
                 <div className="avatar-overlay">
                   <span>{enviandoFoto ? "Enviando..." : "Editar"}</span>
                 </div>
-          
+
                 <input
                   ref={inputFotoRef}
                   type="file"
@@ -450,23 +494,21 @@ function Dashboard({ user, setUser }) {
                   onChange={handleSelecionarFoto}
                 />
               </div>
-          
+
               {dadosUsuario?.is_lider && (
                 <span className="lider-badge lider-badge-below">LÍDER</span>
               )}
             </div>
-          
+
             <div className="user-text-block">
               <span className="user-name">
                 Olá, {dadosUsuario?.nome?.trim()?.split(/\s+/)[0] || "Usuário"}
               </span>
-            
+
               <div className="user-header-level">{nivelAtual}</div>
-            
-              
             </div>
           </div>
-        
+
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button
               className="notification-btn"
@@ -474,15 +516,18 @@ function Dashboard({ user, setUser }) {
             >
               🔔
               {notificacoesNaoLidas > 0 && (
-                <span className="notification-badge">{notificacoesNaoLidas}</span>
+                <span className="notification-badge">
+                  {notificacoesNaoLidas}
+                </span>
               )}
             </button>
-        
+
             <button className="logout-btn" onClick={handleLogout}>
               Sair
             </button>
           </div>
         </div>
+
         {mostrarMensagens && (
           <div className="main-card" style={{ marginTop: 16 }}>
             <div
@@ -596,7 +641,9 @@ function Dashboard({ user, setUser }) {
           <div className="extrato">
             <h3>{tituloRanking}</h3>
 
-            {ranking.length === 0 ? (
+            {erroRanking ? (
+              <p style={{ color: "#ffb3b3" }}>{erroRanking}</p>
+            ) : ranking.length === 0 ? (
               <p style={{ color: "#ccc" }}>Nenhum usuário no ranking.</p>
             ) : (
               ranking.map((item, index) => {
@@ -630,7 +677,9 @@ function Dashboard({ user, setUser }) {
           <div className="extrato">
             <h3>Extrato</h3>
 
-            {extrato.length === 0 ? (
+            {erroExtrato ? (
+              <p style={{ color: "#ffb3b3" }}>{erroExtrato}</p>
+            ) : extrato.length === 0 ? (
               <p style={{ color: "#ccc" }}>Nenhuma movimentação encontrada.</p>
             ) : (
               <>
@@ -684,7 +733,8 @@ function Dashboard({ user, setUser }) {
                                   : "valor-saida"
                               }
                             >
-                              {item.tipo === "entrada" ? "+" : "-"} {item.valor} Coins
+                              {item.tipo === "entrada" ? "+" : "-"} {item.valor}{" "}
+                              Coins
                             </div>
                           </div>
                         ))}

@@ -1,7 +1,7 @@
 import "../App.css";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useMemo, useState } from "react";
-import api from "../services/api";
+import api, { requestWithRetry } from "../services/api";
 import Footer from "../components/Footer";
 import {
   MapContainer,
@@ -318,6 +318,8 @@ function AdminDashboard({ setUser }) {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  const [erroUsuarios, setErroUsuarios] = useState("");
+  const [erroRankingsAdmin, setErroRankingsAdmin] = useState("");
 
   const [usuarioEmEdicao, setUsuarioEmEdicao] = useState(null);
   const [editNome, setEditNome] = useState("");
@@ -815,14 +817,27 @@ function AdminDashboard({ setUser }) {
   async function carregarUsuarios() {
     try {
       setErro("");
+      setErroUsuarios("");
       setLoading(true);
-
-      const response = await api.get("/admin/users");
-      setUsers(response.data);
+  
+      const response = await requestWithRetry(
+        () => api.get("/admin/users"),
+        {
+          retries: 2,
+          delayMs: 1500,
+        },
+      );
+  
+      setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
+      console.error("Erro ao carregar usuários:", error);
+  
       const mensagem =
-        error.response?.data?.message || "Erro ao carregar usuários";
+        error.response?.data?.message ||
+        "Não foi possível carregar os usuários agora.";
+  
       setErro(mensagem);
+      setErroUsuarios(mensagem);
     } finally {
       setLoading(false);
     }
@@ -831,17 +846,22 @@ function AdminDashboard({ setUser }) {
   async function carregarRankingsAdmin() {
     try {
       setCarregandoRankingsAdmin(true);
-
-      const response = await api.get("/user/admin-rankings");
-
+      setErroRankingsAdmin("");
+  
+      const response = await requestWithRetry(
+        () => api.get("/user/admin-rankings"),
+        {
+          retries: 2,
+          delayMs: 1500,
+        },
+      );
+  
       setRankingNext(response.data?.next?.ranking || []);
       setRankingGE(response.data?.ge?.ranking || []);
       setRankingLideres(response.data?.lideres?.ranking || []);
     } catch (error) {
       console.error("Erro ao carregar rankings do admin:", error);
-      setRankingNext([]);
-      setRankingGE([]);
-      setRankingLideres([]);
+      setErroRankingsAdmin("Não foi possível carregar os rankings agora.");
     } finally {
       setCarregandoRankingsAdmin(false);
     }
@@ -1867,7 +1887,13 @@ function AdminDashboard({ setUser }) {
 
           <SectionCard
             title="Usuários cadastrados"
-            subtitle={`Total: ${users.length}`}
+            subtitle={
+              loading
+                ? "Carregando usuários..."
+                : erroUsuarios
+                  ? "Falha ao carregar usuários"
+                  : `Total: ${users.length}`
+            }
             icon="📋"
             open={mostrarUsuarios}
             onToggle={() => setMostrarUsuarios(!mostrarUsuarios)}
@@ -1896,6 +1922,8 @@ function AdminDashboard({ setUser }) {
             >
               {loading ? (
                 <p style={{ color: "#ccc" }}>Carregando usuários...</p>
+              ) : erroUsuarios ? (
+                <p style={{ color: "#ffb3b3" }}>{erroUsuarios}</p>
               ) : usuariosFiltrados.length === 0 ? (
                 <p style={{ color: "#ccc" }}>
                   Nenhum usuário encontrado para essa busca.
@@ -2812,6 +2840,8 @@ function AdminDashboard({ setUser }) {
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking Next...</p>
+            ) : erroRankingsAdmin ? (
+              <p style={{ color: "#ffb3b3" }}>{erroRankingsAdmin}</p>
             ) : rankingNext.length === 0 ? (
               <p style={{ color: "#ccc" }}>
                 Nenhum usuário encontrado no ranking Next.
@@ -2855,6 +2885,8 @@ function AdminDashboard({ setUser }) {
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking GE...</p>
+            ) : erroRankingsAdmin ? (
+              <p style={{ color: "#ffb3b3" }}>{erroRankingsAdmin}</p>
             ) : rankingGE.length === 0 ? (
               <p style={{ color: "#ccc" }}>
                 Nenhum usuário encontrado no ranking GE.
@@ -2898,6 +2930,8 @@ function AdminDashboard({ setUser }) {
           >
             {carregandoRankingsAdmin ? (
               <p style={{ color: "#ccc" }}>Carregando ranking de líderes...</p>
+            ) : erroRankingsAdmin ? (
+              <p style={{ color: "#ffb3b3" }}>{erroRankingsAdmin}</p>
             ) : rankingLideres.length === 0 ? (
               <p style={{ color: "#ccc" }}>
                 Nenhum usuário encontrado no ranking de líderes.

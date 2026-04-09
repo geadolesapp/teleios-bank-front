@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "../App.css";
-import api from "../services/api";
+import api, { requestWithRetry } from "../services/api";
 import Footer from "../components/Footer";
 import olhoAberto from "../assets/olho-aberto.png";
 import olhoFechado from "../assets/olho-fechado.png";
@@ -109,16 +109,29 @@ function Login({ setUser, layoutConfig }) {
 
   async function handleLogin(e) {
     e.preventDefault();
+
+    if (!email.trim() || !senha.trim()) {
+      setErro("Informe e-mail e senha");
+      return;
+    }
+
     setErro("");
     setLoading(true);
 
     try {
       await limparSessaoAntiga();
 
-      const response = await api.post("/auth/login", {
-        email: email.trim(),
-        senha,
-      });
+      const response = await requestWithRetry(
+        () =>
+          api.post("/auth/login", {
+            email: email.trim(),
+            senha,
+          }),
+        {
+          retries: 2,
+          delayMs: 1500,
+        },
+      );
 
       const { token, user } = response.data;
 
@@ -127,7 +140,9 @@ function Login({ setUser, layoutConfig }) {
 
       setUser(user);
     } catch (error) {
-      const mensagem = error.response?.data?.message || "Erro ao fazer login";
+      const mensagem =
+        error.response?.data?.message ||
+        "Erro ao fazer login. Tente novamente em alguns segundos.";
       setErro(mensagem);
     } finally {
       setLoading(false);
@@ -136,7 +151,9 @@ function Login({ setUser, layoutConfig }) {
 
   return (
     <div
-      className={`container app-theme-bg login-page ${loginBackgroundUrl ? "has-custom-login-bg" : ""}`}
+      className={`container app-theme-bg login-page ${
+        loginBackgroundUrl ? "has-custom-login-bg" : ""
+      }`}
       style={
         loginBackgroundUrl
           ? {

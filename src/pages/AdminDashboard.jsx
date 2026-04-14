@@ -48,6 +48,15 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
   const [mapZoom, setMapZoom] = useState(13);
 
+  const [locaisFavoritos, setLocaisFavoritos] = useState([]);
+  const [carregandoFavoritos, setCarregandoFavoritos] = useState(false);
+  const [mostrarFavoritos, setMostrarFavoritos] = useState(false);
+  const [salvandoFavorito, setSalvandoFavorito] = useState(false);
+
+  useEffect(() => {
+    carregarLocaisFavoritos();
+  }, []);
+
   function detectarDispositivo() {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
 
@@ -61,6 +70,19 @@ function ModalMapa({ onClose, onConfirm }) {
     }
 
     return "outro";
+  }
+
+  async function carregarLocaisFavoritos() {
+    try {
+      setCarregandoFavoritos(true);
+      const response = await api.get("/admin/locais-favoritos");
+      setLocaisFavoritos(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Erro ao carregar locais favoritos:", error);
+      setLocaisFavoritos([]);
+    } finally {
+      setCarregandoFavoritos(false);
+    }
   }
 
   function abrirNoMapaDoCelular() {
@@ -82,7 +104,7 @@ function ModalMapa({ onClose, onConfirm }) {
         url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
       }
     } else {
-      alert("Digite um endereço ou selecione um ponto antes de abrir o mapa do celular");
+      alert("Digite um endereço ou selecione um local antes de abrir o mapa do celular");
       return;
     }
 
@@ -203,6 +225,68 @@ function ModalMapa({ onClose, onConfirm }) {
     }
   }
 
+  async function salvarLocalAtualComoFavorito() {
+    if (!pontoSelecionado) {
+      alert("Selecione um local no mapa antes de salvar nos favoritos");
+      return;
+    }
+
+    const nomeFavorito = window.prompt("Digite um nome para este local favorito:");
+
+    if (!nomeFavorito || !nomeFavorito.trim()) {
+      return;
+    }
+
+    try {
+      setSalvandoFavorito(true);
+
+      await api.post("/admin/locais-favoritos", {
+        nome: nomeFavorito.trim(),
+        endereco:
+          enderecoPreview ||
+          `Lat ${pontoSelecionado.lat}, Lng ${pontoSelecionado.lng}`,
+        latitude: pontoSelecionado.lat,
+        longitude: pontoSelecionado.lng,
+      });
+
+      await carregarLocaisFavoritos();
+      setMostrarFavoritos(true);
+      alert("Local favorito salvo com sucesso");
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao salvar local favorito";
+      alert(mensagem);
+    } finally {
+      setSalvandoFavorito(false);
+    }
+  }
+
+  function selecionarFavorito(local) {
+    const lat = Number(local.latitude);
+    const lng = Number(local.longitude);
+
+    setPontoSelecionado({ lat, lng });
+    setEnderecoPreview(local.endereco || "");
+    setEnderecoBusca(local.endereco || "");
+    setMapCenter([lat, lng]);
+    setMapZoom(17);
+    setResultadosBusca([]);
+  }
+
+  async function excluirFavorito(id) {
+    const confirmar = window.confirm("Deseja remover este local favorito?");
+    if (!confirmar) return;
+
+    try {
+      await api.delete(`/admin/locais-favoritos/${id}`);
+      await carregarLocaisFavoritos();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message || "Erro ao remover local favorito";
+      alert(mensagem);
+    }
+  }
+
   function confirmarLocal() {
     if (!pontoSelecionado) {
       alert("Selecione um ponto no mapa");
@@ -277,7 +361,7 @@ function ModalMapa({ onClose, onConfirm }) {
               ? "Obtendo localização..."
               : "Usar minha localização"}
           </button>
-        
+
           <button
             type="button"
             className="action-btn secondary"
@@ -291,7 +375,103 @@ function ModalMapa({ onClose, onConfirm }) {
           >
             {textoBotaoMapaCelular}
           </button>
+
+          <button
+            type="button"
+            className="action-btn secondary"
+            onClick={() => setMostrarFavoritos((prev) => !prev)}
+            style={{
+              padding: "10px 14px",
+              fontSize: 14,
+              minWidth: "unset",
+              flex: "0 0 auto",
+            }}
+          >
+            {mostrarFavoritos ? "Ocultar favoritos" : "Locais salvos"}
+          </button>
         </div>
+
+        {mostrarFavoritos && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: 12,
+              borderRadius: 14,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              maxHeight: 220,
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{
+                color: "#fff",
+                fontWeight: 700,
+                marginBottom: 10,
+              }}
+            >
+              Locais favoritos
+            </div>
+
+            {carregandoFavoritos ? (
+              <p style={{ color: "#ccc", margin: 0 }}>Carregando favoritos...</p>
+            ) : locaisFavoritos.length === 0 ? (
+              <p style={{ color: "#ccc", margin: 0 }}>
+                Nenhum local favorito salvo ainda.
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {locaisFavoritos.map((local) => (
+                  <div
+                    key={local._id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      alignItems: "flex-start",
+                      background: "rgba(255,255,255,0.04)",
+                      borderRadius: 12,
+                      padding: 10,
+                    }}
+                  >
+                    <div
+                      style={{ flex: 1, cursor: "pointer" }}
+                      onClick={() => selecionarFavorito(local)}
+                    >
+                      <div style={{ color: "#fff", fontWeight: 700 }}>
+                        {local.nome}
+                      </div>
+                      <div
+                        style={{
+                          color: "#c9d7e3",
+                          fontSize: 13,
+                          marginTop: 4,
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {local.endereco}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="action-btn secondary"
+                      onClick={() => excluirFavorito(local._id)}
+                      style={{
+                        padding: "8px 10px",
+                        fontSize: 12,
+                        minWidth: "unset",
+                        flex: "0 0 auto",
+                      }}
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {resultadosBusca.length > 0 && (
           <div
@@ -361,6 +541,30 @@ function ModalMapa({ onClose, onConfirm }) {
           ) : (
             <p>Digite um endereço, use sua localização ou toque no mapa para marcar o local.</p>
           )}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          <button
+            type="button"
+            className="action-btn secondary"
+            onClick={salvarLocalAtualComoFavorito}
+            disabled={salvandoFavorito}
+            style={{
+              padding: "10px 14px",
+              fontSize: 14,
+              minWidth: "unset",
+              flex: "0 0 auto",
+            }}
+          >
+            {salvandoFavorito ? "Salvando local..." : "Salvar este local"}
+          </button>
         </div>
 
         <div className="map-actions">

@@ -136,35 +136,123 @@ function ModalMapa({ onClose, onConfirm }) {
     }
   }
 
-  async function pesquisarEndereco() {
-    if (!enderecoBusca.trim()) {
-      alert("Digite um endereço para pesquisar");
-      return;
-    }
+  function extrairNumeroEndereco(texto) {
+  if (!texto) return "";
+  const match = texto.match(/\b\d{1,6}[A-Za-z]?\b/);
+  return match ? match[0].toLowerCase() : "";
+}
 
-    try {
-      setBuscandoLocais(true);
-      setResultadosBusca([]);
+function normalizarTexto(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(
-          enderecoBusca.trim(),
-        )}&limit=5`,
-      );
+function extrairRuaEndereco(texto) {
+  if (!texto) return "";
 
-      const data = await response.json();
-      setResultadosBusca(Array.isArray(data) ? data : []);
+  const semCep = texto.replace(/\b\d{5}-?\d{3}\b/g, "");
+  const partes = semCep.split(",");
 
-      if (!data || data.length === 0) {
-        alert("Nenhum endereço encontrado");
-      }
-    } catch (error) {
-      console.error("Erro ao pesquisar endereço:", error);
-      alert("Erro ao pesquisar endereço");
-    } finally {
-      setBuscandoLocais(false);
+  if (partes.length > 0) {
+    const primeiraParte = partes[0];
+    const semNumero = primeiraParte.replace(/\b\d{1,6}[A-Za-z]?\b/g, "");
+    return normalizarTexto(semNumero);
+  }
+
+  return normalizarTexto(semCep.replace(/\b\d{1,6}[A-Za-z]?\b/g, ""));
+}
+
+function pontuarResultadoBusca(resultado, enderecoDigitado) {
+  const numeroBuscado = extrairNumeroEndereco(enderecoDigitado);
+  const ruaBuscada = extrairRuaEndereco(enderecoDigitado);
+
+  const displayName = normalizarTexto(resultado.display_name || "");
+  const address = resultado.address || {};
+
+  const houseNumber = normalizarTexto(
+    address.house_number ||
+      address.houseNumber ||
+      address.housenumber ||
+      "",
+  );
+
+  const road = normalizarTexto(
+    address.road ||
+      address.pedestrian ||
+      address.footway ||
+      address.residential ||
+      address.cycleway ||
+      "",
+  );
+
+  let score = 0;
+
+  if (numeroBuscado) {
+    if (houseNumber === numeroBuscado) {
+      score += 100;
+    } else if (displayName.includes(numeroBuscado)) {
+      score += 50;
     }
   }
+
+  if (ruaBuscada) {
+    if (road && (road.includes(ruaBuscada) || ruaBuscada.includes(road))) {
+      score += 40;
+    } else if (displayName.includes(ruaBuscada)) {
+      score += 20;
+    }
+  }
+
+  return score;
+}
+
+  async function pesquisarEndereco() {
+  if (!enderecoBusca.trim()) {
+    alert("Digite um endereço para pesquisar");
+    return;
+  }
+
+  try {
+    setBuscandoLocais(true);
+    setResultadosBusca([]);
+
+    const query = enderecoBusca.trim();
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=br&q=${encodeURIComponent(
+        query,
+      )}&limit=10`,
+    );
+
+    const data = await response.json();
+    const lista = Array.isArray(data) ? data : [];
+
+    const resultadosOrdenados = [...lista].sort((a, b) => {
+      const scoreA = pontuarResultadoBusca(a, query);
+      const scoreB = pontuarResultadoBusca(b, query);
+
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+
+      return 0;
+    });
+
+    setResultadosBusca(resultadosOrdenados);
+
+    if (resultadosOrdenados.length === 0) {
+      alert("Nenhum endereço encontrado");
+    }
+  } catch (error) {
+    console.error("Erro ao pesquisar endereço:", error);
+    alert("Erro ao pesquisar endereço");
+  } finally {
+    setBuscandoLocais(false);
+  }
+}
 
   function selecionarResultado(resultado) {
     const lat = Number(resultado.lat);

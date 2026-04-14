@@ -48,6 +48,83 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
     onClose();
   }
 
+  function obterPosicao(options) {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocalização não suportada neste navegador"));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+  }
+
+  function traduzirErroGeolocalizacao(error) {
+    if (!error) {
+      return "Não foi possível obter sua localização.";
+    }
+
+    if (typeof error.code === "number") {
+      switch (error.code) {
+        case 1:
+          return "Permissão de localização negada. Verifique o acesso à localização no Safari.";
+        case 2:
+          return "Não foi possível determinar sua localização.";
+        case 3:
+          return "A localização demorou demais para responder.";
+        default:
+          return "Não foi possível obter sua localização.";
+      }
+    }
+
+    return error.message || "Não foi possível obter sua localização.";
+  }
+
+  async function obterLocalizacaoComFallback() {
+    if (!navigator.geolocation) {
+      return {
+        latitude: undefined,
+        longitude: undefined,
+        aviso:
+          "Este navegador não oferece suporte à localização. O resgate pode falhar em QR Codes com restrição de local.",
+      };
+    }
+
+    try {
+      const posicao = await obterPosicao({
+        enableHighAccuracy: false,
+        timeout: 15000,
+        maximumAge: 30000,
+      });
+
+      return {
+        latitude: posicao.coords.latitude,
+        longitude: posicao.coords.longitude,
+        aviso: "",
+      };
+    } catch (erroInicial) {
+      try {
+        const posicao = await obterPosicao({
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0,
+        });
+
+        return {
+          latitude: posicao.coords.latitude,
+          longitude: posicao.coords.longitude,
+          aviso: "",
+        };
+      } catch (erroFinal) {
+        return {
+          latitude: undefined,
+          longitude: undefined,
+          aviso: traduzirErroGeolocalizacao(erroFinal || erroInicial),
+        };
+      }
+    }
+  }
+
   useEffect(() => {
     let ativo = true;
 
@@ -74,28 +151,10 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
 
             try {
               setCarregando(true);
+              setErro("");
               setMensagem("QR Code lido. Processando...");
 
               await pararScanner();
-
-              let latitude;
-              let longitude;
-
-              try {
-                const posicao = await new Promise((resolve, reject) => {
-                  navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0,
-                  });
-                });
-
-                latitude = posicao.coords.latitude;
-                longitude = posicao.coords.longitude;
-              } catch {
-                latitude = undefined;
-                longitude = undefined;
-              }
 
               let codigo = decodedText;
 
@@ -108,6 +167,14 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
                 // usa o texto puro
               }
 
+              setMensagem("QR Code lido. Confirmando localização...");
+
+              const {
+                latitude,
+                longitude,
+                aviso: avisoLocalizacao,
+              } = await obterLocalizacaoComFallback();
+
               const response = await api.post("/user/resgatar-qrcode", {
                 codigo,
                 latitude,
@@ -117,7 +184,12 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
               setMensagem(
                 response.data.message || "QR Code resgatado com sucesso",
               );
-              setErro("");
+
+              if (avisoLocalizacao) {
+                setErro(avisoLocalizacao);
+              } else {
+                setErro("");
+              }
 
               if (onResgateSucesso) {
                 onResgateSucesso();
@@ -140,7 +212,7 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
       } catch (error) {
         console.error("Erro ao iniciar câmera:", error);
         setErro(
-          "Não foi possível acessar a câmera. No celular, isso pode exigir HTTPS ou permissão do navegador.",
+          "Não foi possível acessar a câmera. No iPhone, verifique a permissão da câmera e da localização no Safari.",
         );
         setMensagem("");
         iniciadoRef.current = false;

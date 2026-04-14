@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import api from "../services/api";
 
@@ -80,7 +80,7 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
     return error.message || "Não foi possível obter sua localização.";
   }
 
-  async function obterLocalizacaoComFallback() {
+  const obterLocalizacaoComFallback = useCallback(async () => {
     if (!navigator.geolocation) {
       return {
         latitude: undefined,
@@ -89,14 +89,14 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
           "Este navegador não oferece suporte à localização. O resgate pode falhar em QR Codes com restrição de local.",
       };
     }
-
+  
     try {
       const posicao = await obterPosicao({
         enableHighAccuracy: false,
         timeout: 15000,
         maximumAge: 30000,
       });
-
+  
       return {
         latitude: posicao.coords.latitude,
         longitude: posicao.coords.longitude,
@@ -109,7 +109,7 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
           timeout: 20000,
           maximumAge: 0,
         });
-
+  
         return {
           latitude: posicao.coords.latitude,
           longitude: posicao.coords.longitude,
@@ -123,7 +123,7 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
         };
       }
     }
-  }
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -225,7 +225,7 @@ function QRCodeScanner({ onClose, onResgateSucesso }) {
       ativo = false;
       pararScanner();
     };
-  }, [onResgateSucesso]);
+  }, [onResgateSucesso, obterLocalizacaoComFallback]);
 
   return (
     <div className="scanner-overlay">

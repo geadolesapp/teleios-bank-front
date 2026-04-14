@@ -584,7 +584,14 @@ function pontuarResultadoBusca(resultado, enderecoDigitado) {
                 }}
                 onClick={() => selecionarResultado(resultado)}
               >
-                {resultado.display_name}
+                <div>
+                  <div style={{ fontWeight: 700 }}>
+                    Busca: {enderecoBusca.trim()}
+                  </div>
+                  <div style={{ opacity: 0.82, marginTop: 4 }}>
+                    Resultado: {resultado.display_name}
+                  </div>
+                </div>
               </button>
             ))}
           </div>

@@ -43,9 +43,51 @@ function ModalMapa({ onClose, onConfirm }) {
   const [enderecoBusca, setEnderecoBusca] = useState("");
   const [resultadosBusca, setResultadosBusca] = useState([]);
   const [buscandoLocais, setBuscandoLocais] = useState(false);
+  const [obtendoLocalizacaoAtual, setObtendoLocalizacaoAtual] = useState(false);
 
   const [mapCenter, setMapCenter] = useState([-25.5307, -49.2037]);
   const [mapZoom, setMapZoom] = useState(13);
+
+  function detectarDispositivo() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+    if (/android/i.test(ua)) return "android";
+
+    if (
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    ) {
+      return "ios";
+    }
+
+    return "outro";
+  }
+
+  function abrirNoMapaDoCelular() {
+    const endereco = enderecoBusca.trim();
+    const tipo = detectarDispositivo();
+
+    let url = "";
+
+    if (pontoSelecionado?.lat && pontoSelecionado?.lng) {
+      if (tipo === "ios") {
+        url = `http://maps.apple.com/?ll=${pontoSelecionado.lat},${pontoSelecionado.lng}`;
+      } else {
+        url = `https://www.google.com/maps?q=${pontoSelecionado.lat},${pontoSelecionado.lng}`;
+      }
+    } else if (endereco) {
+      if (tipo === "ios") {
+        url = `http://maps.apple.com/?q=${encodeURIComponent(endereco)}`;
+      } else {
+        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
+      }
+    } else {
+      alert("Digite um endereço ou selecione um ponto antes de abrir o mapa do celular");
+      return;
+    }
+
+    window.open(url, "_blank");
+  }
 
   async function buscarEndereco(lat, lng) {
     try {
@@ -56,10 +98,17 @@ function ModalMapa({ onClose, onConfirm }) {
       );
       const data = await response.json();
 
-      setEnderecoPreview(data.display_name || `Lat ${lat}, Lng ${lng}`);
+      const endereco =
+        data.display_name || `Lat ${lat.toFixed(6)}, Lng ${lng.toFixed(6)}`;
+
+      setEnderecoPreview(endereco);
+      setEnderecoBusca(endereco);
     } catch (error) {
       console.error("Erro ao buscar endereço:", error);
-      setEnderecoPreview(`Lat ${lat}, Lng ${lng}`);
+
+      const enderecoFallback = `Lat ${lat.toFixed(6)}, Lng ${lng.toFixed(6)}`;
+      setEnderecoPreview(enderecoFallback);
+      setEnderecoBusca(enderecoFallback);
     } finally {
       setCarregandoEndereco(false);
     }
@@ -116,6 +165,44 @@ function ModalMapa({ onClose, onConfirm }) {
     await buscarEndereco(latlng.lat, latlng.lng);
   }
 
+  async function usarMinhaLocalizacaoAtual() {
+    if (!navigator.geolocation) {
+      alert("Este dispositivo não oferece suporte à localização");
+      return;
+    }
+
+    try {
+      setObtendoLocalizacaoAtual(true);
+      setResultadosBusca([]);
+
+      const posicao = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        });
+      });
+
+      const lat = posicao.coords.latitude;
+      const lng = posicao.coords.longitude;
+
+      const ponto = { lat, lng };
+
+      setPontoSelecionado(ponto);
+      setMapCenter([lat, lng]);
+      setMapZoom(18);
+
+      await buscarEndereco(lat, lng);
+    } catch (error) {
+      console.error("Erro ao obter localização atual:", error);
+      alert(
+        "Não foi possível obter sua localização atual. Verifique a permissão de localização no navegador.",
+      );
+    } finally {
+      setObtendoLocalizacaoAtual(false);
+    }
+  }
+
   function confirmarLocal() {
     if (!pontoSelecionado) {
       alert("Selecione um ponto no mapa");
@@ -131,6 +218,11 @@ function ModalMapa({ onClose, onConfirm }) {
       longitude: pontoSelecionado.lng,
     });
   }
+
+  const textoBotaoMapaCelular =
+    detectarDispositivo() === "ios"
+      ? "Abrir Apple Maps"
+      : "Abrir Google Maps";
 
   return (
     <div className="scanner-overlay">
@@ -158,6 +250,46 @@ function ModalMapa({ onClose, onConfirm }) {
             disabled={buscandoLocais}
           >
             {buscandoLocais ? "Pesquisando..." : "Pesquisar endereço"}
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          <button
+            type="button"
+            className="action-btn secondary"
+            onClick={usarMinhaLocalizacaoAtual}
+            disabled={obtendoLocalizacaoAtual}
+            style={{
+              padding: "10px 14px",
+              fontSize: 14,
+              minWidth: "unset",
+              flex: "0 0 auto",
+            }}
+          >
+            {obtendoLocalizacaoAtual
+              ? "Obtendo localização..."
+              : "Usar minha localização"}
+          </button>
+        
+          <button
+            type="button"
+            className="action-btn secondary"
+            onClick={abrirNoMapaDoCelular}
+            style={{
+              padding: "10px 14px",
+              fontSize: 14,
+              minWidth: "unset",
+              flex: "0 0 auto",
+            }}
+          >
+            {textoBotaoMapaCelular}
           </button>
         </div>
 
@@ -227,7 +359,7 @@ function ModalMapa({ onClose, onConfirm }) {
               <strong>Endereço:</strong> {enderecoPreview}
             </p>
           ) : (
-            <p>Digite um endereço ou clique no mapa para selecionar um local.</p>
+            <p>Digite um endereço, use sua localização ou toque no mapa para marcar o local.</p>
           )}
         </div>
 

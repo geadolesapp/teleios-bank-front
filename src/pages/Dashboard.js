@@ -58,6 +58,14 @@ function Dashboard({ user, setUser }) {
   const [extrato, setExtrato] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [grupoRanking, setGrupoRanking] = useState("");
+  
+  const [rankingNext, setRankingNext] = useState([]);
+  const [rankingGE, setRankingGE] = useState([]);
+  const [rankingLideres, setRankingLideres] = useState([]);
+  
+  const [mostrarRankingNext, setMostrarRankingNext] = useState(false);
+  const [mostrarRankingGE, setMostrarRankingGE] = useState(false);
+  const [mostrarRankingLideres, setMostrarRankingLideres] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mostrarScanner, setMostrarScanner] = useState(false);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
@@ -147,13 +155,27 @@ function Dashboard({ user, setUser }) {
       }
 
       if (rankingResult.status === "fulfilled") {
-        setGrupoRanking(rankingResult.value.data?.grupo || "");
-        setRanking(rankingResult.value.data?.ranking || []);
+        const dadosRanking = rankingResult.value.data || {};
+      
+        if (dadosRanking.isLider) {
+          setGrupoRanking("");
+          setRanking([]);
+      
+          setRankingNext(dadosRanking.next?.ranking || []);
+          setRankingGE(dadosRanking.ge?.ranking || []);
+          setRankingLideres(dadosRanking.lideres?.ranking || []);
+        } else {
+          setGrupoRanking(dadosRanking.grupo || "");
+          setRanking(dadosRanking.ranking || []);
+      
+          setRankingNext([]);
+          setRankingGE([]);
+          setRankingLideres([]);
+        }
       } else {
         console.error("Erro ao carregar /user/ranking:", rankingResult.reason);
         setErroRanking("Não foi possível carregar o ranking agora.");
       }
-
       if (mensagensResult.status === "fulfilled") {
         setMensagens(mensagensResult.value.data || []);
       } else {
@@ -449,6 +471,63 @@ function Dashboard({ user, setUser }) {
   const extratoRestante = extrato.slice(4);
 
   const tituloRanking = grupoRanking ? `Ranking ${grupoRanking}` : "Ranking";
+  const usuarioEhLider = !!dadosUsuario?.is_lider;
+
+    function renderizarListaRanking(lista) {
+    if (!lista || lista.length === 0) {
+      return <p style={{ color: "#ccc" }}>Nenhum usuário no ranking.</p>;
+    }
+  
+    return lista.map((item, index) => {
+      const info = getRankingInfo(index);
+      const nivelRanking = getNivelPorSaldo(item.saldo);
+  
+      return (
+        <div className={info.classe} key={item._id}>
+          <div className="ranking-esquerda">
+            <span className="ranking-medalha">{info.medalha}</span>
+  
+            <div className="ranking-textos">
+              <strong>
+                {info.posicao} {formatarNomeRanking(item.nome)}
+              </strong>
+            </div>
+          </div>
+  
+          <div className="ranking-direita">
+            <div className="ranking-nivel">{nivelRanking}</div>
+            <div className="ranking-saldo">
+              {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
+            </div>
+          </div>
+        </div>
+      );
+    });
+  }
+  
+  function renderizarRankingColapsavel(titulo, aberto, setAberto, lista) {
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <button
+          type="button"
+          className="action-btn secondary"
+          onClick={() => setAberto((prev) => !prev)}
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: aberto ? 12 : 0,
+          }}
+        >
+          <span>{titulo}</span>
+          <span>{aberto ? "Ocultar" : "Abrir"}</span>
+        </button>
+  
+        {aberto && renderizarListaRanking(lista)}
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -639,38 +718,35 @@ function Dashboard({ user, setUser }) {
           </div>
 
           <div className="extrato">
-            <h3>{tituloRanking}</h3>
-
+            <h3>{usuarioEhLider ? "Rankings" : tituloRanking}</h3>
+          
             {erroRanking ? (
               <p style={{ color: "#ffb3b3" }}>{erroRanking}</p>
-            ) : ranking.length === 0 ? (
-              <p style={{ color: "#ccc" }}>Nenhum usuário no ranking.</p>
+            ) : usuarioEhLider ? (
+              <>
+                {renderizarRankingColapsavel(
+                  "Ranking Next",
+                  mostrarRankingNext,
+                  setMostrarRankingNext,
+                  rankingNext,
+                )}
+          
+                {renderizarRankingColapsavel(
+                  "Ranking GE",
+                  mostrarRankingGE,
+                  setMostrarRankingGE,
+                  rankingGE,
+                )}
+          
+                {renderizarRankingColapsavel(
+                  "Ranking Líderes",
+                  mostrarRankingLideres,
+                  setMostrarRankingLideres,
+                  rankingLideres,
+                )}
+              </>
             ) : (
-              ranking.map((item, index) => {
-                const info = getRankingInfo(index);
-                const nivelRanking = getNivelPorSaldo(item.saldo);
-
-                return (
-                  <div className={info.classe} key={item._id}>
-                    <div className="ranking-esquerda">
-                      <span className="ranking-medalha">{info.medalha}</span>
-
-                      <div className="ranking-textos">
-                        <strong>
-                          {info.posicao} {formatarNomeRanking(item.nome)}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <div className="ranking-direita">
-                      <div className="ranking-nivel">{nivelRanking}</div>
-                      <div className="ranking-saldo">
-                        {Number(item.saldo || 0).toLocaleString("pt-BR")} Coins
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+              renderizarListaRanking(ranking)
             )}
           </div>
 

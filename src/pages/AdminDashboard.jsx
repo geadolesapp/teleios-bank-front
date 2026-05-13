@@ -839,6 +839,7 @@ function AdminDashboard({ setUser }) {
   const [grupoDestinoMensagem, setGrupoDestinoMensagem] = useState("todos");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
   const [exigeConfirmacaoMensagem, setExigeConfirmacaoMensagem] = useState(false);
+  const [mensagensExpandidas, setMensagensExpandidas] = useState({});
 
   const [rankingNext, setRankingNext] = useState([]);
   const [rankingGE, setRankingGE] = useState([]);
@@ -1052,6 +1053,13 @@ function AdminDashboard({ setUser }) {
       posicao: `${index + 1}º`,
     };
   }
+
+  function toggleMensagemExpandida(id) {
+  setMensagensExpandidas((prev) => ({
+    ...prev,
+    [id]: !prev[id],
+  }));
+}
 
   function formatarGrupoMensagem(grupo) {
     if (grupo === "todos") return "Enviada para todos";
@@ -2688,9 +2696,66 @@ function AdminDashboard({ setUser }) {
                           {formatarGrupoMensagem(msg.grupo_destino)}
                         </div>
                         {msg.exige_confirmacao && (
-                          <div style={{ color: "#ffdd99", fontSize: 13, marginTop: 8 }}>
-                            Exige confirmação de leitura
-                          </div>
+                          <>
+                            <div style={{ color: "#ffdd99", fontSize: 13, marginTop: 8 }}>
+                              Exige confirmação de leitura
+                            </div>
+                        
+                            <button
+                              type="button"
+                              className="action-btn secondary"
+                              style={{ marginTop: 10 }}
+                              onClick={() => toggleMensagemExpandida(msg._id)}
+                            >
+                              {mensagensExpandidas[msg._id]
+                                ? "Ocultar confirmações"
+                                : "Ver confirmações"}
+                            </button>
+                        
+                            {mensagensExpandidas[msg._id] && (
+                              <div
+                                style={{
+                                  marginTop: 12,
+                                  padding: 12,
+                                  borderRadius: 10,
+                                  background: "rgba(255,255,255,0.05)",
+                                }}
+                              >
+                                {!msg.confirmacoes_leitura ||
+                                msg.confirmacoes_leitura.length === 0 ? (
+                                  <div style={{ color: "#ccc" }}>
+                                    Nenhuma confirmação ainda.
+                                  </div>
+                                ) : (
+                                  msg.confirmacoes_leitura.map((confirmacao, index) => (
+                                    <div
+                                      key={index}
+                                      style={{
+                                        marginBottom: 10,
+                                        paddingBottom: 10,
+                                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                                      }}
+                                    >
+                                      <div style={{ color: "#fff", fontWeight: "bold" }}>
+                                        {confirmacao.user_id?.nome || "Usuário"}
+                                      </div>
+                        
+                                      <div style={{ color: "#bbb", fontSize: 13 }}>
+                                        {confirmacao.user_id?.email || ""}
+                                      </div>
+                        
+                                      <div style={{ color: "#00e676", fontSize: 13, marginTop: 4 }}>
+                                        Confirmado em{" "}
+                                        {new Date(
+                                          confirmacao.confirmado_em,
+                                        ).toLocaleString("pt-BR")}
+                                      </div>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
 

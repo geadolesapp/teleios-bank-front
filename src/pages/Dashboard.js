@@ -398,6 +398,27 @@ function Dashboard({ user, setUser }) {
     };
   }
 
+  async function confirmarLeituraMensagem(msg) {
+    try {
+      await requestWithRetry(
+        () => api.patch(`/user/messages/${msg._id}/confirm-read`),
+        { retries: 1, delayMs: 1000 },
+      );
+  
+      if (mensagemPopup?._id === msg._id) {
+        setMensagemPopup(null);
+      }
+  
+      await carregarDashboard();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.message ||
+        "Erro ao confirmar leitura";
+  
+      alert(mensagem);
+    }
+  }
+
   function getNivelPorSaldo(saldo) {
     const saldoAtual = Number(saldo || 0);
 
@@ -656,12 +677,26 @@ function Dashboard({ user, setUser }) {
                         style={{ cursor: "pointer", flex: 1 }}
                       >
                         <strong>{msg.titulo}</strong>
+                      
                         <div className="extrato-data">
-                          {new Date(msg.createdAt).toLocaleString("pt-BR")}
+                          Enviada em: {new Date(msg.createdAt).toLocaleString("pt-BR")}
                         </div>
+                      
                         <div style={{ marginTop: 8 }}>{msg.conteudo}</div>
+                      
+                        {msg.exige_confirmacao && !msg.confirmada && (
+                          <div style={{ color: "#ffdd99", fontSize: 13, marginTop: 8 }}>
+                            Esta mensagem exige confirmação de leitura.
+                          </div>
+                        )}
+                      
+                        {msg.exige_confirmacao && msg.confirmada && (
+                          <div style={{ color: "#00e676", fontSize: 13, marginTop: 8 }}>
+                            Leitura confirmada.
+                          </div>
+                        )}
                       </div>
-
+                      
                       <button
                         className="action-btn secondary"
                         onClick={() => removerMensagem(msg)}
@@ -892,10 +927,22 @@ function Dashboard({ user, setUser }) {
         <div className="scanner-overlay">
           <div className="scanner-modal">
             <h3>{mensagemPopup.titulo}</h3>
+      
+            <div className="extrato-data" style={{ marginBottom: 12 }}>
+              Enviada em:{" "}
+              {new Date(mensagemPopup.createdAt).toLocaleString("pt-BR")}
+            </div>
+      
             <p style={{ color: "#dfe8ef", lineHeight: 1.5 }}>
               {mensagemPopup.conteudo}
             </p>
-
+      
+            {mensagemPopup.exige_confirmacao && !mensagemPopup.confirmada && (
+              <p style={{ color: "#ffdd99", fontSize: 13, marginTop: 12 }}>
+                Esta mensagem exige confirmação de leitura.
+              </p>
+            )}
+      
             <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
               <button
                 className="action-btn secondary"
@@ -903,13 +950,22 @@ function Dashboard({ user, setUser }) {
               >
                 Fechar
               </button>
-
-              <button
-                className="action-btn"
-                onClick={() => naoMostrarNovamente(mensagemPopup)}
-              >
-                Não mostrar novamente
-              </button>
+      
+              {mensagemPopup.exige_confirmacao && !mensagemPopup.confirmada ? (
+                <button
+                  className="action-btn"
+                  onClick={() => confirmarLeituraMensagem(mensagemPopup)}
+                >
+                  Confirmar leitura
+                </button>
+              ) : (
+                <button
+                  className="action-btn"
+                  onClick={() => naoMostrarNovamente(mensagemPopup)}
+                >
+                  Não mostrar novamente
+                </button>
+              )}
             </div>
           </div>
         </div>

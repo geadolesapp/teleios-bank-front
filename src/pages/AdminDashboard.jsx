@@ -53,7 +53,7 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mostrarFavoritos, setMostrarFavoritos] = useState(false);
   const [salvandoFavorito, setSalvandoFavorito] = useState(false);
 
-  const [exigeConfirmacaoMensagem, setExigeConfirmacaoMensagem] = useState(false);
+ 
 
   useEffect(() => {
     carregarLocaisFavoritos();
@@ -838,6 +838,7 @@ function AdminDashboard({ setUser }) {
   const [conteudoMensagem, setConteudoMensagem] = useState("");
   const [grupoDestinoMensagem, setGrupoDestinoMensagem] = useState("todos");
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
+  const [exigeConfirmacaoMensagem, setExigeConfirmacaoMensagem] = useState(false);
 
   const [rankingNext, setRankingNext] = useState([]);
   const [rankingGE, setRankingGE] = useState([]);

@@ -53,6 +53,8 @@ function ModalMapa({ onClose, onConfirm }) {
   const [mostrarFavoritos, setMostrarFavoritos] = useState(false);
   const [salvandoFavorito, setSalvandoFavorito] = useState(false);
 
+  const [exigeConfirmacaoMensagem, setExigeConfirmacaoMensagem] = useState(false);
+
   useEffect(() => {
     carregarLocaisFavoritos();
   }, []);
@@ -1563,11 +1565,13 @@ function AdminDashboard({ setUser }) {
         titulo: tituloMensagem.trim(),
         conteudo: conteudoMensagem.trim(),
         grupo_destino: grupoDestinoMensagem,
+        exige_confirmacao: exigeConfirmacaoMensagem,
       });
 
       setTituloMensagem("");
       setConteudoMensagem("");
       setGrupoDestinoMensagem("todos");
+      setExigeConfirmacaoMensagem(false);
 
       await carregarMensagensAdmin();
       alert("Mensagem enviada com sucesso");
@@ -2612,7 +2616,25 @@ function AdminDashboard({ setUser }) {
                 <option value="ge">Enviar para o grupo GE</option>
                 <option value="lideres">Enviar para o grupo Líderes</option>
               </select>
-
+              
+              <label
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  color: "#fff",
+                  marginTop: 4,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={exigeConfirmacaoMensagem}
+                  onChange={(e) => setExigeConfirmacaoMensagem(e.target.checked)}
+                />
+                Exigir confirmação de leitura
+              </label>
+              
               <button
                 className="action-btn"
                 onClick={enviarMensagemAdmin}
@@ -2664,6 +2686,11 @@ function AdminDashboard({ setUser }) {
                         <div className="extrato-data" style={{ marginTop: 8 }}>
                           {formatarGrupoMensagem(msg.grupo_destino)}
                         </div>
+                        {msg.exige_confirmacao && (
+                          <div style={{ color: "#ffdd99", fontSize: 13, marginTop: 8 }}>
+                            Exige confirmação de leitura
+                          </div>
+                        )}
                       </div>
 
                       <button

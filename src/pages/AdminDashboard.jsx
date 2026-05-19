@@ -836,7 +836,7 @@ function AdminDashboard({ setUser }) {
   const [mensagensAdmin, setMensagensAdmin] = useState([]);
   const [tituloMensagem, setTituloMensagem] = useState("");
   const [conteudoMensagem, setConteudoMensagem] = useState("");
-  const [grupoDestinoMensagem, setGrupoDestinoMensagem] = useState("todos");
+  const [gruposDestinoMensagem, setGruposDestinoMensagem] = useState(["todos"]);
   const [enviandoMensagem, setEnviandoMensagem] = useState(false);
   const [exigeConfirmacaoMensagem, setExigeConfirmacaoMensagem] = useState(false);
   const [mensagensExpandidas, setMensagensExpandidas] = useState({});
@@ -1061,7 +1061,38 @@ function AdminDashboard({ setUser }) {
   }));
 }
 
+  function alternarGrupoDestinoMensagem(grupo) {
+  setGruposDestinoMensagem((prev) => {
+    if (grupo === "todos") {
+      return ["todos"];
+    }
+
+    let novosGrupos = prev.filter((item) => item !== "todos");
+
+    if (novosGrupos.includes(grupo)) {
+      novosGrupos = novosGrupos.filter((item) => item !== grupo);
+    } else {
+      novosGrupos.push(grupo);
+    }
+
+    return novosGrupos.length > 0 ? novosGrupos : ["todos"];
+  });
+}
+  
   function formatarGrupoMensagem(grupo) {
+    if (Array.isArray(grupo)) {
+      if (grupo.includes("todos")) return "Enviada para todos";
+  
+      const nomes = grupo.map((item) => {
+        if (item === "next") return "Next";
+        if (item === "ge") return "GE";
+        if (item === "lideres") return "Líderes";
+        return item;
+      });
+  
+      return `Enviada para: ${nomes.join(", ")}`;
+    }
+  
     if (grupo === "todos") return "Enviada para todos";
     if (grupo === "next") return "Enviada para o grupo Next";
     if (grupo === "ge") return "Enviada para o grupo GE";
@@ -1573,13 +1604,13 @@ function AdminDashboard({ setUser }) {
       await api.post("/admin/messages", {
         titulo: tituloMensagem.trim(),
         conteudo: conteudoMensagem.trim(),
-        grupo_destino: grupoDestinoMensagem,
+        grupos_destino: gruposDestinoMensagem,
         exige_confirmacao: exigeConfirmacaoMensagem,
       });
 
       setTituloMensagem("");
       setConteudoMensagem("");
-      setGrupoDestinoMensagem("todos");
+      setGruposDestinoMensagem(["todos"]);
       setExigeConfirmacaoMensagem(false);
 
       await carregarMensagensAdmin();
@@ -2615,16 +2646,40 @@ function AdminDashboard({ setUser }) {
                 style={{ resize: "vertical" }}
               />
 
-              <select
-                className="input"
-                value={grupoDestinoMensagem}
-                onChange={(e) => setGrupoDestinoMensagem(e.target.value)}
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  color: "#fff",
+                }}
               >
-                <option value="todos">Enviar para todos</option>
-                <option value="next">Enviar para o grupo Next</option>
-                <option value="ge">Enviar para o grupo GE</option>
-                <option value="lideres">Enviar para o grupo Líderes</option>
-              </select>
+                <strong>Enviar para:</strong>
+              
+                {[
+                  { value: "todos", label: "Todos os grupos" },
+                  { value: "next", label: "Grupo Next" },
+                  { value: "ge", label: "Grupo GE" },
+                  { value: "lideres", label: "Grupo Líderes" },
+                ].map((grupo) => (
+                  <label
+                    key={grupo.value}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={gruposDestinoMensagem.includes(grupo.value)}
+                      onChange={() => alternarGrupoDestinoMensagem(grupo.value)}
+                    />
+                    {grupo.label}
+                  </label>
+                ))}
+              </div>
               
               <label
                 style={{
@@ -2693,7 +2748,7 @@ function AdminDashboard({ setUser }) {
                           {msg.conteudo}
                         </div>
                         <div className="extrato-data" style={{ marginTop: 8 }}>
-                          {formatarGrupoMensagem(msg.grupo_destino)}
+                          {formatarGrupoMensagem(msg.grupos_destino || msg.grupo_destino)}
                         </div>
                         {msg.exige_confirmacao && (
                           <>
